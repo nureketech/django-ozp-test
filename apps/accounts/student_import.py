@@ -179,6 +179,11 @@ def student_name(user):
     return f"{user.last_name} {user.first_name}".strip() or user.username
 
 
+def delete_student(user):
+    """Студентті өшіреді: профилі мен тест әрекеттері (нәтижелері) де бірге өшеді."""
+    user.delete()
+
+
 def update_student(user, name, group, iin):
     """Студентті өңдеу: аты-жөні, тобы, ИИН (логин). Коды өзгермейді."""
     user.username = iin

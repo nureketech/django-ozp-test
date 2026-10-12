@@ -4,8 +4,6 @@ from django.contrib.auth.models import User
 from django.db.models import Count
 from django.utils.translation import gettext_lazy as _
 
-from apps.quiz.admin import TeacherSubjectAdminMixin
-
 from .forms import ProfileInlineFormSet
 from .models import Profile, StudyGroup
 from .student_import import codes_workbook, regenerate_codes
@@ -30,7 +28,9 @@ def only_for_superuser(actions, request, names):
 
 
 @admin.register(StudyGroup)
-class StudyGroupAdmin(TeacherSubjectAdminMixin, admin.ModelAdmin):
+class StudyGroupAdmin(admin.ModelAdmin):
+    """Топтар — тек әкімші (Django-ның әдепкі рұқсаттары; оқытушыға ашық емес)."""
+
     list_display = ["name", "subject", "language", "student_count"]
     list_filter = ["subject", "language"]
     search_fields = ["name"]

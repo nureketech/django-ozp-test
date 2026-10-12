@@ -10,7 +10,7 @@ from django.urls import reverse
 from django.utils import timezone
 from openpyxl import Workbook, load_workbook
 
-from apps.quiz.models import ExamSession, Subject
+from apps.quiz.models import Attempt, ExamSession, Subject
 
 from .models import Profile, StudyGroup
 from .student_import import iin_is_valid, normalize_iin, split_name
@@ -287,51 +287,81 @@ class TeacherAdminAccessTests(TestCase):
     def test_teacher_sees_only_own_subject(self):
         response = self.client.get(reverse("admin:quiz_examsession_changelist"))
         self.assertNotContains(response, "Информатика сессиясы")
-        response = self.client.get(reverse("admin:accounts_studygroup_changelist"))
-        self.assertContains(response, "МАТ-21")
-        self.assertNotContains(response, "ИНФ-21")
         url = reverse("admin:quiz_examsession_change", args=[self.inf_session.pk])
         # Бөтен жазба — admin оны «жоқ» деп, басты бетке қайтарады
         self.assertEqual(self.client.get(url).status_code, 302)
 
-    def test_teacher_can_create_group(self):
-        response = self.client.post(
-            reverse("admin:accounts_studygroup_add"),
-            {"name": "МАТ-22", "subject": self.mathematics.pk, "language": "ru", "_save": "Save"},
-        )
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(StudyGroup.objects.get(name="МАТ-22").language, "ru")
+    def test_session_form_lists_only_own_subject_groups(self):
+        # Топтарды оқытушы басқармайды, бірақ сессия құрғанда өз пәнінің топтарын таңдайды
+        response = self.client.get(reverse("admin:quiz_examsession_add"))
+        groups = response.context["adminform"].form.fields["groups"].queryset
+        self.assertEqual(list(groups), [self.math_group])
 
-    def test_group_language_is_required(self):
-        response = self.client.post(
-            reverse("admin:accounts_studygroup_add"),
-            {"name": "МАТ-23", "subject": self.mathematics.pk, "_save": "Save"},
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("language", response.context["adminform"].form.errors)
-        self.assertFalse(StudyGroup.objects.filter(name="МАТ-23").exists())
-
-    def test_teacher_cannot_manage_users_or_delete(self):
+    def test_teacher_cannot_manage_groups(self):
         forbidden = [
-            reverse("admin:auth_user_changelist"),
-            reverse("admin:auth_user_add"),
-            reverse("admin:quiz_question_changelist"),
+            reverse("admin:accounts_studygroup_changelist"),
+            reverse("admin:accounts_studygroup_add"),
+            reverse("admin:accounts_studygroup_change", args=[self.math_group.pk]),
             reverse("admin:accounts_studygroup_delete", args=[self.math_group.pk]),
         ]
         for url in forbidden:
             with self.subTest(url=url):
                 self.assertEqual(self.client.get(url).status_code, 403)
+        response = self.client.post(
+            reverse("admin:accounts_studygroup_add"),
+            {"name": "МАТ-22", "subject": self.mathematics.pk, "language": "ru", "_save": "Save"},
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(StudyGroup.objects.filter(name="МАТ-22").exists())
 
-    def test_admin_index_lists_sessions_and_groups(self):
+    def test_teacher_cannot_manage_users_or_questions(self):
+        forbidden = [
+            reverse("admin:auth_user_changelist"),
+            reverse("admin:auth_user_add"),
+            reverse("admin:quiz_question_changelist"),
+        ]
+        for url in forbidden:
+            with self.subTest(url=url):
+                self.assertEqual(self.client.get(url).status_code, 403)
+
+    def test_admin_index_lists_only_sessions(self):
         response = self.client.get(reverse("admin:index"))
         self.assertContains(response, reverse("admin:quiz_examsession_changelist"))
-        self.assertContains(response, reverse("admin:accounts_studygroup_changelist"))
+        self.assertNotContains(response, reverse("admin:accounts_studygroup_changelist"))
         self.assertNotContains(response, reverse("admin:auth_user_changelist"))
 
-    def test_teacher_does_not_see_student_tools(self):
-        response = self.client.get(reverse("admin:accounts_studygroup_changelist"))
-        self.assertNotContains(response, reverse("students:list"))
-        self.assertNotContains(response, "regenerate_group_codes")
+
+class SuperuserGroupAdminTests(TestCase):
+    """Топтарды тек әкімші құрады, өзгертеді, өшіреді."""
+
+    def setUp(self):
+        self.admin = User.objects.create_superuser(username="admin", password="pass12345")
+        self.client.force_login(self.admin)
+
+    def test_superuser_creates_group(self):
+        response = self.client.post(
+            reverse("admin:accounts_studygroup_add"),
+            {"name": "ИНФ-22", "subject": informatics().pk, "language": "ru", "_save": "Save"},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(StudyGroup.objects.get(name="ИНФ-22").language, "ru")
+
+    def test_group_language_is_required(self):
+        response = self.client.post(
+            reverse("admin:accounts_studygroup_add"),
+            {"name": "ИНФ-23", "subject": informatics().pk, "_save": "Save"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("language", response.context["adminform"].form.errors)
+        self.assertFalse(StudyGroup.objects.filter(name="ИНФ-23").exists())
+
+    def test_superuser_can_delete_group(self):
+        group = StudyGroup.objects.create(name="ИНФ-24", subject=informatics(), language="kk")
+        response = self.client.post(
+            reverse("admin:accounts_studygroup_delete", args=[group.pk]), {"post": "yes"}
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(StudyGroup.objects.filter(pk=group.pk).exists())
 
 
 # ---------- Студенттерді Excel-ден импорттау, ИИН + код арқылы кіру ----------
@@ -587,6 +617,8 @@ class StudentPagesAccessTests(TestCase):
             ("get", reverse("students:add")),
             ("get", reverse("students:edit", args=[self.student.pk])),
             ("post", reverse("students:new_code", args=[self.student.pk])),
+            ("get", reverse("students:delete", args=[self.student.pk])),
+            ("post", reverse("students:delete", args=[self.student.pk])),
             ("get", reverse("students:import")),
             ("get", reverse("students:import_template")),
         ]
@@ -609,6 +641,7 @@ class StudentPagesAccessTests(TestCase):
             for method, url in self.urls:
                 with self.subTest(user=user.username, url=url):
                     self.assertEqual(self.request(method, url).status_code, 403)
+        # Студент өшірілмеді, коды өзгермеді
         self.assertTrue(User.objects.get(pk=self.student.pk).check_password("pass12345"))
 
     def test_staff_cannot_be_edited_here(self):
@@ -618,6 +651,9 @@ class StudentPagesAccessTests(TestCase):
             self.assertEqual(self.client.get(url).status_code, 404)
         response = self.client.post(reverse("students:new_code", args=[admin_user.pk]))
         self.assertEqual(response.status_code, 404)
+        response = self.client.post(reverse("students:delete", args=[admin_user.pk]))
+        self.assertEqual(response.status_code, 404)
+        self.assertTrue(User.objects.filter(pk=admin_user.pk).exists())
         self.assertEqual(self.client.get(reverse("students:new_code", args=[self.student.pk])).status_code, 405)
 
 
@@ -803,6 +839,7 @@ class StudentPagesRussianTests(StudentPagesTestCase):
             "add errors": self.client.post(reverse("students:add"), {"iin": "1"}),
             "edit": self.client.get(reverse("students:edit", args=[student.pk])),
             "new code": self.client.post(reverse("students:new_code", args=[student.pk])),
+            "delete": self.client.get(reverse("students:delete", args=[student.pk])),
             "import": self.client.get(reverse("students:import")),
             "added": self.client.post(
                 reverse("students:add"),
@@ -813,3 +850,44 @@ class StudentPagesRussianTests(StudentPagesTestCase):
             with self.subTest(page=name):
                 self.assertEqual(response.status_code, 200)
                 self.assert_russian(response, name)
+
+
+class DeleteStudentTests(StudentPagesTestCase):
+    def setUp(self):
+        super().setUp()
+        self.student = self.make_student(IIN_AIGERIM, "Сапарова", "Айгерім", self.group)
+        self.url = reverse("students:delete", args=[self.student.pk])
+
+    def test_list_has_delete_button(self):
+        self.assertContains(self.client.get(reverse("students:list")), self.url)
+
+    def test_confirm_page_shows_results_count(self):
+        now = timezone.now()
+        session = ExamSession.objects.create(
+            title="Сессия", subject=informatics(), opens_at=now, closes_at=now + timedelta(hours=2)
+        )
+        Attempt.objects.create(
+            user=self.student, session=session, language="kk", deadline=now + timedelta(hours=1)
+        )
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Сапарова Айгерім")
+        self.assertContains(response, "тест нәтижелері де өшеді (саны: 1)")
+        # GET ештеңе өшірмейді
+        self.assertTrue(User.objects.filter(pk=self.student.pk).exists())
+
+    def test_delete_removes_student_with_results(self):
+        now = timezone.now()
+        session = ExamSession.objects.create(
+            title="Сессия", subject=informatics(), opens_at=now, closes_at=now + timedelta(hours=2)
+        )
+        Attempt.objects.create(
+            user=self.student, session=session, language="kk", deadline=now + timedelta(hours=1)
+        )
+        response = self.client.post(self.url, follow=True)
+        self.assertRedirects(response, reverse("students:list"))
+        self.assertContains(response, "Сапарова Айгерім өшірілді.")
+        self.assertFalse(User.objects.filter(pk=self.student.pk).exists())
+        self.assertFalse(Profile.objects.filter(user_id=self.student.pk).exists())
+        self.assertFalse(Attempt.objects.exists())
+        self.assertTrue(ExamSession.objects.filter(pk=session.pk).exists())

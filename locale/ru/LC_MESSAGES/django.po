@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 17:38+0500\n"
+"POT-Creation-Date: 2026-10-12 18:14+0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,11 +19,11 @@ msgstr ""
 "n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || "
 "(n%100>=11 && n%100<=14)? 2 : 3);\n"
 
-#: .\apps\accounts\admin.py:18
+#: .\apps\accounts\admin.py:16
 msgid "Таңдалғандардың арасында студент жоқ."
 msgstr "Среди выбранных нет студентов."
 
-#: .\apps\accounts\admin.py:20
+#: .\apps\accounts\admin.py:18
 #, python-format
 msgid "%(count)s студентке жаңа код жасалды."
 msgstr "Новый код создан для студентов: %(count)s."
@@ -38,7 +38,7 @@ msgstr "Создать новые коды студентам группы"
 
 #: .\apps\accounts\admin.py:80 .\apps\accounts\forms.py:52
 #: .\apps\accounts\student_import.py:40 .\templates\students\code.html:16
-#: .\templates\students\list.html:27
+#: .\templates\students\delete.html:13 .\templates\students\list.html:27
 msgid "Аты-жөні"
 msgstr "Имя и фамилия"
 
@@ -90,15 +90,16 @@ msgid "Тегі, аты, әкесінің аты: бірінші сөз — те
 msgstr "Фамилия, имя, отчество: первое слово — фамилия, остальное — имя."
 
 #: .\apps\accounts\forms.py:57 .\apps\accounts\forms.py:102
-#: .\apps\accounts\student_import.py:40 .\apps\accounts\student_import.py:286
+#: .\apps\accounts\student_import.py:40 .\apps\accounts\student_import.py:291
 #: .\apps\quiz\forms.py:498 .\apps\quiz\services.py:899
-#: .\templates\students\code.html:18 .\templates\students\list.html:29
-#: .\templates\teacher\results.html:33
+#: .\templates\students\code.html:18 .\templates\students\delete.html:15
+#: .\templates\students\list.html:29 .\templates\teacher\results.html:33
 msgid "Топ"
 msgstr "Группа"
 
 #: .\apps\accounts\forms.py:60 .\apps\accounts\student_import.py:40
-#: .\templates\students\code.html:20 .\templates\students\list.html:28
+#: .\templates\students\code.html:20 .\templates\students\delete.html:17
+#: .\templates\students\list.html:28
 msgid "ИИН"
 msgstr "ИИН"
 
@@ -213,49 +214,54 @@ msgstr "этот ИИН уже есть в строке %(row)s."
 msgid "Файлда студент жоқ."
 msgstr "В файле нет студентов."
 
-#: .\apps\accounts\student_import.py:219
+#: .\apps\accounts\student_import.py:224
 #, python-format
 msgid ""
 "Студенттер импортталды: жаңасы — %(created)s, жаңартылғаны — %(updated)s. "
 "Жаңа кодтар жүктелген файлда."
 msgstr "Студенты импортированы: новых — %(created)s, обновлено — %(updated)s. Новые коды — в скачанном файле."
 
-#: .\apps\accounts\student_import.py:253
+#: .\apps\accounts\student_import.py:258
 msgid "Кодтар"
 msgstr "Коды"
 
-#: .\apps\accounts\student_import.py:254 .\apps\quiz\forms.py:195
+#: .\apps\accounts\student_import.py:259 .\apps\quiz\forms.py:195
 #: .\apps\quiz\forms.py:388 .\apps\quiz\question_import.py:89
 #: .\apps\quiz\question_import.py:98 .\templates\students\code.html:22
 msgid "Код"
 msgstr "Код"
 
-#: .\apps\accounts\student_import.py:258
+#: .\apps\accounts\student_import.py:263
 msgid "бұрынғы код"
 msgstr "прежний код"
 
-#: .\apps\accounts\student_import.py:275 .\templates\base.html:87
+#: .\apps\accounts\student_import.py:280 .\templates\base.html:87
 #: .\templates\students\list.html:4 .\templates\students\list.html:9
 msgid "Студенттер"
 msgstr "Студенты"
 
-#: .\apps\accounts\student_import.py:285
+#: .\apps\accounts\student_import.py:290
 msgid "Топтар"
 msgstr "Группы"
 
-#: .\apps\accounts\student_import.py:286 .\apps\quiz\services.py:900
+#: .\apps\accounts\student_import.py:291 .\apps\quiz\services.py:900
 #: .\templates\teacher\_subject_switcher.html:6
 #: .\templates\teacher\_subject_switcher.html:18
 msgid "Пән"
 msgstr "Предмет"
 
-#: .\apps\accounts\student_import.py:286
+#: .\apps\accounts\student_import.py:291
 msgid "Оқыту тілі"
 msgstr "Язык обучения"
 
-#: .\apps\accounts\student_views.py:104
+#: .\apps\accounts\student_views.py:106
 msgid "Студенттің деректері сақталды."
 msgstr "Данные студента сохранены."
+
+#: .\apps\accounts\student_views.py:120
+#, python-format
+msgid "%(name)s өшірілді."
+msgstr "%(name)s удалён(а)."
 
 #: .\apps\accounts\validators.py:14
 #, python-format
@@ -1521,6 +1527,29 @@ msgstr "Добавить ещё студента"
 msgid "Студенттер тізіміне"
 msgstr "К списку студентов"
 
+#: .\templates\students\delete.html:4 .\templates\students\delete.html:10
+msgid "Студентті өшіру"
+msgstr "Удаление студента"
+
+#: .\templates\students\delete.html:23
+#, python-format
+msgid ""
+"Студентпен бірге оның тест нәтижелері де өшеді (саны: %(count)s). Бұл "
+"әрекетті қайтару мүмкін емес."
+msgstr "Вместе со студентом удалятся и его результаты тестов (количество: %(count)s). Это действие нельзя отменить."
+
+#: .\templates\students\delete.html:25
+msgid "Студент өшіріледі. Бұл әрекетті қайтару мүмкін емес."
+msgstr "Студент будет удалён. Это действие нельзя отменить."
+
+#: .\templates\students\delete.html:30
+msgid "Иә, өшіру"
+msgstr "Да, удалить"
+
+#: .\templates\students\delete.html:31
+msgid "Бас тарту"
+msgstr "Отмена"
+
 #: .\templates\students\form.html:4 .\templates\students\form.html:9
 msgid "Студентті өңдеу"
 msgstr "Редактирование студента"
@@ -1663,7 +1692,11 @@ msgstr "%(name)s: создать новый код? Старый код пере
 msgid "Жаңа код"
 msgstr "Новый код"
 
-#: .\templates\students\list.html:51
+#: .\templates\students\list.html:48
+msgid "Өшіру"
+msgstr "Удалить"
+
+#: .\templates\students\list.html:52
 msgid "Студенттер жоқ."
 msgstr "Студентов нет."
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 17:38+0500\n"
+"POT-Creation-Date: 2026-10-12 18:14+0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,11 +17,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 
-#: .\apps\accounts\admin.py:18
+#: .\apps\accounts\admin.py:16
 msgid "Таңдалғандардың арасында студент жоқ."
 msgstr ""
 
-#: .\apps\accounts\admin.py:20
+#: .\apps\accounts\admin.py:18
 #, python-format
 msgid "%(count)s студентке жаңа код жасалды."
 msgstr ""
@@ -36,7 +36,7 @@ msgstr ""
 
 #: .\apps\accounts\admin.py:80 .\apps\accounts\forms.py:52
 #: .\apps\accounts\student_import.py:40 .\templates\students\code.html:16
-#: .\templates\students\list.html:27
+#: .\templates\students\delete.html:13 .\templates\students\list.html:27
 msgid "Аты-жөні"
 msgstr ""
 
@@ -87,15 +87,16 @@ msgid "Тегі, аты, әкесінің аты: бірінші сөз — те
 msgstr ""
 
 #: .\apps\accounts\forms.py:57 .\apps\accounts\forms.py:102
-#: .\apps\accounts\student_import.py:40 .\apps\accounts\student_import.py:286
+#: .\apps\accounts\student_import.py:40 .\apps\accounts\student_import.py:291
 #: .\apps\quiz\forms.py:498 .\apps\quiz\services.py:899
-#: .\templates\students\code.html:18 .\templates\students\list.html:29
-#: .\templates\teacher\results.html:33
+#: .\templates\students\code.html:18 .\templates\students\delete.html:15
+#: .\templates\students\list.html:29 .\templates\teacher\results.html:33
 msgid "Топ"
 msgstr ""
 
 #: .\apps\accounts\forms.py:60 .\apps\accounts\student_import.py:40
-#: .\templates\students\code.html:20 .\templates\students\list.html:28
+#: .\templates\students\code.html:20 .\templates\students\delete.html:17
+#: .\templates\students\list.html:28
 msgid "ИИН"
 msgstr ""
 
@@ -210,48 +211,53 @@ msgstr ""
 msgid "Файлда студент жоқ."
 msgstr ""
 
-#: .\apps\accounts\student_import.py:219
+#: .\apps\accounts\student_import.py:224
 #, python-format
 msgid ""
 "Студенттер импортталды: жаңасы — %(created)s, жаңартылғаны — %(updated)s. "
 "Жаңа кодтар жүктелген файлда."
 msgstr ""
 
-#: .\apps\accounts\student_import.py:253
+#: .\apps\accounts\student_import.py:258
 msgid "Кодтар"
 msgstr ""
 
-#: .\apps\accounts\student_import.py:254 .\apps\quiz\forms.py:195
+#: .\apps\accounts\student_import.py:259 .\apps\quiz\forms.py:195
 #: .\apps\quiz\forms.py:388 .\apps\quiz\question_import.py:89
 #: .\apps\quiz\question_import.py:98 .\templates\students\code.html:22
 msgid "Код"
 msgstr ""
 
-#: .\apps\accounts\student_import.py:258
+#: .\apps\accounts\student_import.py:263
 msgid "бұрынғы код"
 msgstr ""
 
-#: .\apps\accounts\student_import.py:275 .\templates\base.html:87
+#: .\apps\accounts\student_import.py:280 .\templates\base.html:87
 #: .\templates\students\list.html:4 .\templates\students\list.html:9
 msgid "Студенттер"
 msgstr ""
 
-#: .\apps\accounts\student_import.py:285
+#: .\apps\accounts\student_import.py:290
 msgid "Топтар"
 msgstr ""
 
-#: .\apps\accounts\student_import.py:286 .\apps\quiz\services.py:900
+#: .\apps\accounts\student_import.py:291 .\apps\quiz\services.py:900
 #: .\templates\teacher\_subject_switcher.html:6
 #: .\templates\teacher\_subject_switcher.html:18
 msgid "Пән"
 msgstr ""
 
-#: .\apps\accounts\student_import.py:286
+#: .\apps\accounts\student_import.py:291
 msgid "Оқыту тілі"
 msgstr ""
 
-#: .\apps\accounts\student_views.py:104
+#: .\apps\accounts\student_views.py:106
 msgid "Студенттің деректері сақталды."
+msgstr ""
+
+#: .\apps\accounts\student_views.py:120
+#, python-format
+msgid "%(name)s өшірілді."
 msgstr ""
 
 #: .\apps\accounts\validators.py:14
@@ -1469,6 +1475,29 @@ msgstr ""
 msgid "Студенттер тізіміне"
 msgstr ""
 
+#: .\templates\students\delete.html:4 .\templates\students\delete.html:10
+msgid "Студентті өшіру"
+msgstr ""
+
+#: .\templates\students\delete.html:23
+#, python-format
+msgid ""
+"Студентпен бірге оның тест нәтижелері де өшеді (саны: %(count)s). Бұл "
+"әрекетті қайтару мүмкін емес."
+msgstr ""
+
+#: .\templates\students\delete.html:25
+msgid "Студент өшіріледі. Бұл әрекетті қайтару мүмкін емес."
+msgstr ""
+
+#: .\templates\students\delete.html:30
+msgid "Иә, өшіру"
+msgstr ""
+
+#: .\templates\students\delete.html:31
+msgid "Бас тарту"
+msgstr ""
+
 #: .\templates\students\form.html:4 .\templates\students\form.html:9
 msgid "Студентті өңдеу"
 msgstr ""
@@ -1611,7 +1640,11 @@ msgstr ""
 msgid "Жаңа код"
 msgstr ""
 
-#: .\templates\students\list.html:51
+#: .\templates\students\list.html:48
+msgid "Өшіру"
+msgstr ""
+
+#: .\templates\students\list.html:52
 msgid "Студенттер жоқ."
 msgstr ""
 

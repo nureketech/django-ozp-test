@@ -27,10 +27,12 @@ from .student_import import (
     CODE_LENGTH,
     codes_workbook,
     create_student,
+    delete_student,
     import_students,
     import_template,
     regenerate_codes,
     result_message,
+    student_name,
     students,
     update_student,
 )
@@ -104,6 +106,21 @@ def student_edit(request, pk):
         messages.success(request, _("Студенттің деректері сақталды."))
         return redirect("students:list")
     return render(request, "students/form.html", {"form": form, "student": student})
+
+
+@superuser_required
+def student_delete(request, pk):
+    """
+    Студентті өшіру: GET — растау (неше тест нәтижесі бірге өшетіні), POST — өшіру.
+    """
+    student = get_object_or_404(students().select_related("profile__group"), pk=pk)
+    if request.method == "POST":
+        name = student_name(student)
+        delete_student(student)
+        messages.success(request, _("%(name)s өшірілді.") % {"name": name})
+        return redirect("students:list")
+    context = {"student": student, "attempts_count": student.attempts.count()}
+    return render(request, "students/delete.html", context)
 
 
 @never_cache

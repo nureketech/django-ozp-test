@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Студентті өшіру" %}{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <h1 class="h4 mb-3">{% translate "Студентті өшіру" %}</h1>
+        <div class="bg-white rounded shadow-sm p-4 mb-3">
+            <dl class="row mb-0">
+                <dt class="col-4">{% translate "Аты-жөні" %}</dt>
+                <dd class="col-8">{{ student.last_name }} {{ student.first_name }}</dd>
+                <dt class="col-4">{% translate "Топ" %}</dt>
+                <dd class="col-8">{{ student.profile.group.name|default:"—" }}</dd>
+                <dt class="col-4">{% translate "ИИН" %}</dt>
+                <dd class="col-8 font-monospace mb-0">{{ student.username }}</dd>
+            </dl>
+        </div>
+        <div class="alert {% if attempts_count %}alert-danger{% else %}alert-warning{% endif %}">
+            {% if attempts_count %}
+                {% blocktranslate with count=attempts_count %}Студентпен бірге оның тест нәтижелері де өшеді (саны: {{ count }}). Бұл әрекетті қайтару мүмкін емес.{% endblocktranslate %}
+            {% else %}
+                {% translate "Студент өшіріледі. Бұл әрекетті қайтару мүмкін емес." %}
+            {% endif %}
+        </div>
+        <form method="post" class="d-flex flex-wrap gap-2">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">{% translate "Иә, өшіру" %}</button>
+            <a class="btn btn-outline-secondary" href="{% url 'students:list' %}">{% translate "Бас тарту" %}</a>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

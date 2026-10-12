@@ -45,6 +45,7 @@
                             {% csrf_token %}
                             <button type="submit" class="btn btn-sm btn-outline-secondary">{% translate "Жаңа код" %}</button>
                         </form>
+                        <a class="btn btn-sm btn-outline-danger" href="{% url 'students:delete' student.pk %}">{% translate "Өшіру" %}</a>
                     </td>
                 </tr>
             {% empty %}
