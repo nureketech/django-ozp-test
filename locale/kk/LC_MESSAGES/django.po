@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 10:49+0500\n"
+"POT-Creation-Date: 2026-10-12 11:36+0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -139,11 +139,11 @@ msgstr ""
 msgid "ИИН"
 msgstr ""
 
-#: .\apps\accounts\student_import.py:99 .\apps\quiz\question_import.py:165
+#: .\apps\accounts\student_import.py:99 .\apps\quiz\question_import.py:265
 msgid "Файл оқылмады: ол Excel (.xlsx) файлы болуы керек."
 msgstr ""
 
-#: .\apps\accounts\student_import.py:105 .\apps\quiz\question_import.py:180
+#: .\apps\accounts\student_import.py:105 .\apps\quiz\question_import.py:282
 #, python-format
 msgid "Файлда жол тым көп: бір парақта ең көбі %(count)s жол."
 msgstr ""
@@ -153,9 +153,9 @@ msgstr ""
 msgid "%(row)s-жол, «%(column)s»: %(message)s"
 msgstr ""
 
-#: .\apps\accounts\student_import.py:130 .\apps\quiz\question_import.py:241
-#: .\apps\quiz\question_import.py:253 .\apps\quiz\question_import.py:257
-#: .\apps\quiz\question_import.py:312
+#: .\apps\accounts\student_import.py:130 .\apps\quiz\question_import.py:361
+#: .\apps\quiz\question_import.py:373 .\apps\quiz\question_import.py:377
+#: .\apps\quiz\question_import.py:433
 msgid "бос болмауы керек."
 msgstr ""
 
@@ -197,8 +197,8 @@ msgid "Кодтар"
 msgstr ""
 
 #: .\apps\accounts\student_import.py:226 .\apps\quiz\forms.py:195
-#: .\apps\quiz\forms.py:388 .\apps\quiz\question_import.py:73
-#: .\apps\quiz\question_import.py:81
+#: .\apps\quiz\forms.py:388 .\apps\quiz\question_import.py:88
+#: .\apps\quiz\question_import.py:97
 msgid "Код"
 msgstr ""
 
@@ -300,13 +300,13 @@ msgid "Дәл бір дұрыс жауап белгіленуі керек."
 msgstr ""
 
 #: .\apps\quiz\forms.py:173 .\apps\quiz\forms.py:472 .\apps\quiz\forms.py:542
-#: .\apps\quiz\question_import.py:478 .\templates\quiz\result.html:85
+#: .\apps\quiz\question_import.py:620 .\templates\quiz\result.html:85
 #: .\templates\teacher\bank_sample.html:110
 msgid "Тақырып"
 msgstr ""
 
 #: .\apps\quiz\forms.py:175 .\apps\quiz\forms.py:548
-#: .\apps\quiz\question_import.py:478 .\templates\teacher\bank.html:25
+#: .\apps\quiz\question_import.py:620 .\templates\teacher\bank.html:25
 #: .\templates\teacher\bank_sample.html:111
 #: .\templates\teacher\question_list.html:31
 msgid "Тақырыпша"
@@ -335,12 +335,14 @@ msgstr ""
 msgid "Жоқ (жеке сұрақ)"
 msgstr ""
 
-#: .\apps\quiz\forms.py:194 .\apps\quiz\question_import.py:72
+#: .\apps\quiz\forms.py:194 .\apps\quiz\question_import.py:87
 #: .\templates\teacher\bank_sample.html:114
 msgid "Сұрақ мәтіні"
 msgstr ""
 
 #: .\apps\quiz\forms.py:202 .\apps\quiz\forms.py:273 .\apps\quiz\forms.py:395
+#: .\apps\quiz\question_import.py:91 .\apps\quiz\question_import.py:97
+#: .\apps\quiz\question_import.py:193
 msgid "Сурет"
 msgstr ""
 
@@ -374,13 +376,13 @@ msgstr ""
 msgid "Файл тым үлкен: ең көбі %(size)s МБ."
 msgstr ""
 
-#: .\apps\quiz\forms.py:387 .\apps\quiz\question_import.py:81
+#: .\apps\quiz\forms.py:387 .\apps\quiz\question_import.py:97
 #: .\templates\teacher\question_list.html:34
 msgid "Мәтіні"
 msgstr ""
 
-#: .\apps\quiz\forms.py:394 .\apps\quiz\question_import.py:81
-#: .\apps\quiz\question_import.py:478 .\templates\teacher\context_list.html:18
+#: .\apps\quiz\forms.py:394 .\apps\quiz\question_import.py:97
+#: .\apps\quiz\question_import.py:620 .\templates\teacher\context_list.html:18
 msgid "Атауы"
 msgstr ""
 
@@ -710,137 +712,177 @@ msgstr ""
 msgid "нұсқадағы сұрақтар"
 msgstr ""
 
-#: .\apps\quiz\question_import.py:68
+#: .\apps\quiz\question_import.py:83
 msgid "Тақырыпша (01–20)"
 msgstr ""
 
-#: .\apps\quiz\question_import.py:69
+#: .\apps\quiz\question_import.py:84
 msgid "Деңгей (A/B/C)"
 msgstr ""
 
-#: .\apps\quiz\question_import.py:70 .\apps\quiz\question_import.py:81
+#: .\apps\quiz\question_import.py:85 .\apps\quiz\question_import.py:97
 msgid "Тіл (kk/ru)"
 msgstr ""
 
-#: .\apps\quiz\question_import.py:71
+#: .\apps\quiz\question_import.py:86
 msgid "Контекст кілті"
 msgstr ""
 
-#: .\apps\quiz\question_import.py:75
+#: .\apps\quiz\question_import.py:90
 msgid "Дұрыс жауап (A–D)"
 msgstr ""
 
-#: .\apps\quiz\question_import.py:81
+#: .\apps\quiz\question_import.py:97
 msgid "Кілт"
 msgstr ""
 
-#: .\apps\quiz\question_import.py:189
+#: .\apps\quiz\question_import.py:176
+msgid "сурет пішімі jpg, png немесе webp болуы керек."
+msgstr ""
+
+#: .\apps\quiz\question_import.py:179
+#, python-format
+msgid "сурет тым үлкен: ең көбі %(size)s МБ."
+msgstr ""
+
+#: .\apps\quiz\question_import.py:193
+msgid "сурет ұяшыққа байланбаған."
+msgstr ""
+
+#: .\apps\quiz\question_import.py:197
+msgid "суреті бар жолда мәлімет жоқ."
+msgstr ""
+
+#: .\apps\quiz\question_import.py:203
+#, python-format
+msgid "сурет мына бағандардың бірінде тұруы керек: %(columns)s."
+msgstr ""
+
+#: .\apps\quiz\question_import.py:207
+msgid "бір ұяшықта бір ғана сурет болуы керек."
+msgstr ""
+
+#: .\apps\quiz\question_import.py:226
+msgid ""
+"сурет ұяшықтың ішіне қойылған — оны ұяшықтың үстіне қойыңыз (Кірістіру → "
+"Суреттер → Ұяшықтардың үстіне орналастыру)."
+msgstr ""
+
+#: .\apps\quiz\question_import.py:291
 #, python-format
 msgid "«%(sheet)s» парағы, %(row)s-жол, «%(column)s»: %(message)s"
 msgstr ""
 
-#: .\apps\quiz\question_import.py:204
+#: .\apps\quiz\question_import.py:324
 #, python-format
 msgid "«%(key)s» контекстіне %(total)s сұрақ байланады, ең көбі %(max)s."
 msgstr ""
 
-#: .\apps\quiz\question_import.py:209
+#: .\apps\quiz\question_import.py:329
 msgid "Файлда сұрақ жоқ."
 msgstr ""
 
-#: .\apps\quiz\question_import.py:248
+#: .\apps\quiz\question_import.py:368
 #, python-format
 msgid "«%(key)s» кілті %(row)s-жолда бар."
 msgstr ""
 
-#: .\apps\quiz\question_import.py:255 .\apps\quiz\question_import.py:309
+#: .\apps\quiz\question_import.py:375 .\apps\quiz\question_import.py:430
 msgid "kk немесе ru болуы керек."
 msgstr ""
 
-#: .\apps\quiz\question_import.py:302
+#: .\apps\quiz\question_import.py:423
 #, python-format
 msgid "пәнде мұндай тақырыпша жоқ (01–%(max)s)."
 msgstr ""
 
-#: .\apps\quiz\question_import.py:306
+#: .\apps\quiz\question_import.py:427
 msgid "A, B немесе C болуы керек."
 msgstr ""
 
-#: .\apps\quiz\question_import.py:317
-msgid "жауап нұсқасы бос болмауы керек."
+#: .\apps\quiz\question_import.py:439
+msgid "жауап нұсқасында мәтін не сурет болуы керек."
 msgstr ""
 
-#: .\apps\quiz\question_import.py:324
+#: .\apps\quiz\question_import.py:446
 #, python-format
 msgid "%(letters)s әріптерінің бірі болуы керек."
 msgstr ""
 
-#: .\apps\quiz\question_import.py:336
+#: .\apps\quiz\question_import.py:458
 #, python-format
 msgid "«%(key)s» кілті «%(contexts)s» парағында жоқ."
 msgstr ""
 
-#: .\apps\quiz\question_import.py:344
+#: .\apps\quiz\question_import.py:466
 msgid "контекст пен сұрақтың тілі бірдей болуы керек."
 msgstr ""
 
-#: .\apps\quiz\question_import.py:407
+#: .\apps\quiz\question_import.py:536
 #, python-format
 msgid "Қосылды: сұрақтар — %(questions)s, контексттер — %(contexts)s."
 msgstr ""
 
-#: .\apps\quiz\question_import.py:413
+#: .\apps\quiz\question_import.py:542
 #, python-format
 msgid "Банкте бұрыннан бар, өткізілді — жолдар: %(rows)s."
 msgstr ""
 
-#: .\apps\quiz\question_import.py:456
+#: .\apps\quiz\question_import.py:585
 msgid "Нұсқаулық"
 msgstr ""
 
-#: .\apps\quiz\question_import.py:461
+#: .\apps\quiz\question_import.py:590
 #, python-format
 msgid "Сұрақтарды импорттау: %(subject)s"
 msgstr ""
 
-#: .\apps\quiz\question_import.py:463
+#: .\apps\quiz\question_import.py:592
 #, python-format
 msgid "«%(sheet)s» парағы: бір жол — бір сұрақ."
 msgstr ""
 
-#: .\apps\quiz\question_import.py:464
+#: .\apps\quiz\question_import.py:593
 msgid "Тақырыпша, деңгей, тіл, мәтін, 4 нұсқа және дұрыс жауап — міндетті."
 msgstr ""
 
-#: .\apps\quiz\question_import.py:465
+#: .\apps\quiz\question_import.py:594
 msgid ""
 "Контекстік сұрақта «Контекст кілті» бағанына контекстің кілтін жазыңыз "
 "(мысалы, K1)."
 msgstr ""
 
-#: .\apps\quiz\question_import.py:467
+#: .\apps\quiz\question_import.py:597
 #, python-format
 msgid ""
-"«%(sheet)s» парағы: кілт, атауы, тіл, мәтін, код. Бір контекстке ең көбі "
-"%(max)s сұрақ."
+"«%(sheet)s» парағы: кілт, атауы, тіл, мәтін, код, сурет. Бір контекстке ең "
+"көбі %(max)s сұрақ."
 msgstr ""
 
-#: .\apps\quiz\question_import.py:470
+#: .\apps\quiz\question_import.py:604
 msgid ""
-"Суреттер импортталмайды: суреті бар сұрақты импорттан кейін форма арқылы "
-"толықтырыңыз."
+"Сурет: Кірістіру → Суреттер → Ұяшықтардың үстіне орналастыру. Суреттің сол "
+"жақ жоғарғы бұрышын ұяшыққа қойыңыз: сұрақ пен контекст суреті — «Сурет» "
+"бағанына, жауап суреті — сол жауаптың (A–D) ұяшығына."
 msgstr ""
 
-#: .\apps\quiz\question_import.py:471
+#: .\apps\quiz\question_import.py:610
+#, python-format
+msgid ""
+"Суреті бар жауаптың мәтіні бос болуы мүмкін. Сурет — jpg, png немесе webp, "
+"ең көбі %(size)s МБ."
+msgstr ""
+
+#: .\apps\quiz\question_import.py:613
 msgid ""
 "Қате болса, ештеңе сақталмайды. Банкте бұрыннан бар сұрақ қайта қосылмайды."
 msgstr ""
 
-#: .\apps\quiz\question_import.py:473
+#: .\apps\quiz\question_import.py:615
 msgid "Мысал:"
 msgstr ""
 
-#: .\apps\quiz\question_import.py:477
+#: .\apps\quiz\question_import.py:619
 msgid "Пәннің тақырыпшалары:"
 msgstr ""
 
@@ -896,25 +938,25 @@ msgstr ""
 msgid "Бұл тақырып бойынша таңдалған тілде сұрақ әлі жоқ."
 msgstr ""
 
-#: .\apps\quiz\teacher_views.py:162
+#: .\apps\quiz\teacher_views.py:168
 msgid "Сұрақ сақталды. Келесісін енгізіңіз."
 msgstr ""
 
-#: .\apps\quiz\teacher_views.py:165
+#: .\apps\quiz\teacher_views.py:171
 msgid "Сұрақ сақталды."
 msgstr ""
 
-#: .\apps\quiz\teacher_views.py:210
+#: .\apps\quiz\teacher_views.py:216
 msgid "Көшірмесі жасалды, қажет болса өңдеңіз."
 msgstr ""
 
-#: .\apps\quiz\teacher_views.py:222
+#: .\apps\quiz\teacher_views.py:228
 #, python-format
 msgid ""
 "Контекстте %(count)s белсенді сұрақ бар, бұл сұрақты белсендіруге болмайды."
 msgstr ""
 
-#: .\apps\quiz\teacher_views.py:291
+#: .\apps\quiz\teacher_views.py:299
 msgid "Контекст сақталды."
 msgstr ""
 
@@ -1659,37 +1701,52 @@ msgstr ""
 msgid ""
 "«%(questions_sheet)s» парағы: бір жол — бір сұрақ. Тақырыпша (01–20), деңгей "
 "(A/B/C), тіл (kk/ru), сұрақ мәтіні, 4 жауап нұсқасы және дұрыс жауап әрпі (A–"
-"D) міндетті; код — міндетті емес."
+"D) міндетті; код пен сурет — міндетті емес."
 msgstr ""
 
 #: .\templates\teacher\question_import.html:40
 #, python-format
 msgid ""
 "«%(contexts_sheet)s» парағы (міндетті емес): кілт (мысалы, K1), атауы, тіл, "
-"мәтін, код. Контекстік сұрақта «Контекст кілті» бағанына сол кілтті жазыңыз; "
-"бір контекстке ең көбі %(max)s сұрақ."
+"мәтін, код, сурет. Контекстік сұрақта «Контекст кілті» бағанына сол кілтті "
+"жазыңыз; бір контекстке ең көбі %(max)s сұрақ."
 msgstr ""
 
 #: .\templates\teacher\question_import.html:41
+msgid ""
+"Суретті Excel-ге «Кірістіру → Суреттер → Ұяшықтардың үстіне орналастыру» "
+"арқылы қойып, сол жақ жоғарғы бұрышын ұяшыққа сүйреңіз: сұрақ пен контекст "
+"суреті — «Сурет» бағанына, жауап суреті — сол жауаптың (A–D) ұяшығына. "
+"Суреті бар жауаптың мәтіні бос болуы мүмкін."
+msgstr ""
+
+#: .\templates\teacher\question_import.html:42
 msgid "Файлды осы бетте жүктеңіз. Сұрақтар таңдалған пәнге қосылады."
 msgstr ""
 
-#: .\templates\teacher\question_import.html:44
+#: .\templates\teacher\question_import.html:45
 msgid "Қате болса, ештеңе сақталмайды: қателер жол нөмірімен көрсетіледі."
 msgstr ""
 
-#: .\templates\teacher\question_import.html:45
+#: .\templates\teacher\question_import.html:46
 msgid ""
 "Банкте бұрыннан бар сұрақ (мәтіні, тілі, тақырыпшасы бірдей) қайта "
 "қосылмайды."
 msgstr ""
 
-#: .\templates\teacher\question_import.html:46
+#: .\templates\teacher\question_import.html:47
+#, python-format
 msgid ""
-"Суреттер импортталмайды: суреті бар сұрақты кейін форма арқылы толықтырыңыз."
+"Сурет — jpg, png немесе webp, әрқайсысы ең көбі %(size)s МБ. Ұяшықтың ішіне "
+"қойылған сурет (Place in Cell) оқылмайды."
 msgstr ""
 
-#: .\templates\teacher\question_import.html:47
+#: .\templates\teacher\question_import.html:48
+#, python-format
+msgid "Файлдың көлемі ең көбі %(size)s МБ."
+msgstr ""
+
+#: .\templates\teacher\question_import.html:49
 #, python-format
 msgid "Бір парақта ең көбі %(max)s жол."
 msgstr ""

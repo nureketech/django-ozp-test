@@ -20,7 +20,13 @@ from django.utils.translation import gettext as _
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 
-from .constants import IMPORT_MAX_ROWS, QUESTIONS_PER_CONTEXT, QUESTIONS_TOTAL
+from .constants import (
+    IMPORT_MAX_MB,
+    IMPORT_MAX_ROWS,
+    MAX_IMAGE_MB,
+    QUESTIONS_PER_CONTEXT,
+    QUESTIONS_TOTAL,
+)
 from .forms import (
     AnswerFormSet,
     ContextForm,
@@ -248,6 +254,8 @@ def question_import(request, subject):
         "result": result,
         "subject": subject,
         "max_rows": IMPORT_MAX_ROWS,
+        "max_image_mb": MAX_IMAGE_MB,
+        "max_file_mb": IMPORT_MAX_MB,
         "questions_per_context": QUESTIONS_PER_CONTEXT,
         "questions_sheet": QUESTIONS_SHEET,
         "contexts_sheet": CONTEXTS_SHEET,

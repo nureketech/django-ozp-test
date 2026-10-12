@@ -25,6 +25,7 @@ from django.utils import timezone
 from django.utils.html import escape
 from django.utils.translation import override
 from openpyxl import Workbook, load_workbook
+from openpyxl.drawing.image import Image as ExcelImage
 from PIL import Image
 
 from apps.accounts.models import StudyGroup
@@ -3837,19 +3838,26 @@ class GroupLanguageTests(StudentSubjectTestCase):
 # ---------- Сұрақтарды Excel-ден импорттау ----------
 
 
-def xlsx_file(questions=(), contexts=None, name="questions.xlsx"):
-    """Импорт файлы: «Сұрақтар» парағы (және қажет болса «Контексттер»), 1-жол — тақырыптар."""
+def xlsx_file(questions=(), contexts=None, name="questions.xlsx", images=()):
+    """
+    Импорт файлы: «Сұрақтар» парағы (және қажет болса «Контексттер»), 1-жол — тақырыптар.
+    images — [(парақ атауы, ұяшық, сурет байттары), ...]: сурет ұяшықтың үстіне қойылады.
+    """
     workbook = Workbook()
     sheet = workbook.active
     sheet.title = QUESTIONS_SHEET
-    sheet.append(["header"] * 11)
+    sheet.append(["header"] * 12)
     for row in questions:
         sheet.append(list(row))
     if contexts is not None:
         context_sheet = workbook.create_sheet(CONTEXTS_SHEET)
-        context_sheet.append(["header"] * 5)
+        context_sheet.append(["header"] * 6)
         for row in contexts:
             context_sheet.append(list(row))
+    for sheet_title, cell, data in images:
+        image = ExcelImage(BytesIO(data))
+        image.anchor = cell
+        workbook[sheet_title].add_image(image)
     output = BytesIO()
     workbook.save(output)
     return SimpleUploadedFile(name, output.getvalue())
@@ -3888,7 +3896,9 @@ class QuestionImportTests(TeacherTestCase):
         self.assertIn("questions-informatics.xlsx", response["Content-Disposition"])
         workbook = load_workbook(BytesIO(response.content))
         self.assertEqual(workbook.sheetnames[:2], [QUESTIONS_SHEET, CONTEXTS_SHEET])
-        self.assertEqual(workbook[QUESTIONS_SHEET].max_column, 11)
+        self.assertEqual(workbook[QUESTIONS_SHEET].max_column, 12)
+        self.assertEqual(workbook[QUESTIONS_SHEET]["L1"].value, "Сурет")
+        self.assertEqual(workbook[CONTEXTS_SHEET].max_column, 6)
         # Нұсқаулықта пәннің 20 тақырыпшасы
         guide = [row[0] for row in workbook.worksheets[2].iter_rows(values_only=True)]
         self.assertIn("01", guide)
@@ -4023,6 +4033,12 @@ class QuestionImportTests(TeacherTestCase):
         self.upload(SimpleUploadedFile("my.xlsx", output.getvalue()))
         self.assertEqual(Question.objects.count(), 1)
 
+    def test_answer_needs_text_or_image(self):
+        response = self.upload(xlsx_file([question_row(answers=["1", "", "3", "4"])]))
+        errors = response.context["result"]["errors"]
+        self.assertEqual(len(errors), 1)
+        self.assertIn("2-жол, «B»: жауап нұсқасында мәтін не сурет болуы керек.", errors[0])
+
     def test_page_in_russian(self):
         self.client.cookies["django_language"] = "ru"
 
@@ -4037,3 +4053,88 @@ class QuestionImportTests(TeacherTestCase):
         text = text_without_sheet_names(response)
         self.assertNotRegex(text, KAZAKH_ONLY_LETTERS)
         self.assertIn("строка 2", text)
+
+
+def image_bytes(image_format="PNG", color="red"):
+    """Excel-ге қойылатын шағын сурет (байттар)."""
+    buffer = BytesIO()
+    Image.new("RGB", (40, 30), color).save(buffer, format=image_format)
+    return buffer.getvalue()
+
+
+@override_settings(MEDIA_ROOT=TEST_MEDIA_ROOT)
+class QuestionImportImageTests(TeacherTestCase):
+    """Суреттер Excel ішінен импортталады: сұрақ, жауап және контекст суреті."""
+
+    def upload(self, file):
+        return self.client.post(reverse("quiz:teacher_question_import"), {"file": file})
+
+    def errors(self, response):
+        return response.context["result"]["errors"]
+
+    def test_question_answer_and_context_images(self):
+        question_png = image_bytes(color="red")
+        rows = [question_row(context="K1", answers=["ENIAC", "", "Apple I", "Altair"])]
+        contexts = [["K1", "Кесте", "kk", "Мәтін", ""]]
+        images = [
+            (QUESTIONS_SHEET, "L2", question_png),  # «Сурет» бағаны — сұрақ суреті
+            (QUESTIONS_SHEET, "H2", image_bytes("JPEG", color="blue")),  # B жауабы — тек сурет
+            (CONTEXTS_SHEET, "F2", image_bytes("WEBP", color="green")),
+        ]
+        response = self.upload(xlsx_file(rows, contexts, images=images))
+        self.assertRedirects(response, reverse("quiz:teacher_questions"))
+
+        question = Question.objects.get()
+        self.assertTrue(question.image.name.startswith("questions/"))
+        self.assertTrue(question.image.name.endswith(".png"))
+        with question.image.open("rb") as file:
+            self.assertEqual(file.read(), question_png)
+        answer = question.answers.get(text="")
+        self.assertTrue(answer.image.name.startswith("answers/"))
+        self.assertTrue(answer.image.name.endswith(".jpg"))
+        self.assertFalse(answer.is_correct)
+        self.assertFalse(question.answers.exclude(pk=answer.pk).exclude(image="").exists())
+        # webp PNG-ге айналады
+        self.assertTrue(question.context.image.name.startswith("contexts/"))
+        self.assertTrue(question.context.image.name.endswith(".png"))
+
+    def test_image_errors_save_nothing(self):
+        rows = [question_row(text=f"Сұрақ {index}") for index in range(4)]
+        images = [
+            (QUESTIONS_SHEET, "E2", image_bytes()),  # мәтін бағаны — болмайды
+            (QUESTIONS_SHEET, "L3", image_bytes()),  # бір ұяшықта екі сурет
+            (QUESTIONS_SHEET, "L3", image_bytes(color="blue")),
+            (QUESTIONS_SHEET, "L4", image_bytes("GIF")),  # gif — болмайды
+            (QUESTIONS_SHEET, "L9", image_bytes()),  # бос жол
+        ]
+        errors = self.errors(self.upload(xlsx_file(rows, images=images)))
+        self.assertEqual(len(errors), 4)
+        self.assertIn("2-жол, «Сұрақ мәтіні»: сурет мына бағандардың бірінде тұруы керек", errors[0])
+        self.assertIn("3-жол, «Сурет»: бір ұяшықта бір ғана сурет болуы керек.", errors[1])
+        self.assertIn("4-жол, «Сурет»: сурет пішімі jpg, png немесе webp болуы керек.", errors[2])
+        self.assertIn("9-жол, «Сурет»: суреті бар жолда мәлімет жоқ.", errors[3])
+        self.assertFalse(Question.objects.exists())
+
+    @mock.patch("apps.quiz.question_import.MAX_IMAGE_MB", 0)
+    def test_too_big_image(self):
+        images = [(QUESTIONS_SHEET, "L2", image_bytes())]
+        errors = self.errors(self.upload(xlsx_file([question_row()], images=images)))
+        self.assertEqual(
+            errors, ["«Сұрақтар» парағы, 2-жол, «Сурет»: сурет тым үлкен: ең көбі 0 МБ."]
+        )
+        self.assertFalse(Question.objects.exists())
+
+    def test_image_in_cell_is_reported(self):
+        # Excel 365-тің «ұяшықтың ішіне» қойылған суреті openpyxl-ге #VALUE! болып көрінеді
+        errors = self.errors(self.upload(xlsx_file([question_row() + ["#VALUE!"]])))
+        self.assertEqual(len(errors), 1)
+        self.assertIn("сурет ұяшықтың ішіне қойылған", errors[0])
+
+    def test_context_image_in_wrong_column(self):
+        rows = [question_row(context="K1")]
+        contexts = [["K1", "Кесте", "kk", "Мәтін", ""]]
+        images = [(CONTEXTS_SHEET, "D2", image_bytes())]
+        errors = self.errors(self.upload(xlsx_file(rows, contexts, images=images)))
+        self.assertEqual(len(errors), 1)
+        self.assertIn("«Контексттер» парағы, 2-жол, «Мәтіні»", errors[0])
+        self.assertFalse(Context.objects.exists())
