@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 10:05+0500\n"
+"POT-Creation-Date: 2026-10-12 10:24+0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -208,8 +208,8 @@ msgid ""
 "Бұл сұрақ студенттердің тестінде қолданылған, дұрыс жауабын өзгертуге "
 "болмайды. Көшірмесін жасап, соны өңдеңіз."
 msgstr ""
-"Этот вопрос использован в тестах студентов, менять правильный ответ "
-"нельзя. Создайте копию и редактируйте её."
+"Этот вопрос использован в тестах студентов, менять правильный ответ нельзя. "
+"Создайте копию и редактируйте её."
 
 #: .\apps\quiz\forms.py:66
 #, python-format
@@ -220,26 +220,28 @@ msgstr "Должно быть ровно %(count)s варианта ответа
 msgid "Дәл бір дұрыс жауап белгіленуі керек."
 msgstr "Должен быть отмечен ровно один правильный ответ."
 
-#: .\apps\quiz\forms.py:173 .\apps\quiz\forms.py:448 .\apps\quiz\forms.py:518
-#: .\templates\quiz\result.html:85 .\templates\teacher\bank_sample.html:110
+#: .\apps\quiz\forms.py:173 .\apps\quiz\forms.py:472 .\apps\quiz\forms.py:542
+#: .\apps\quiz\question_import.py:475 .\templates\quiz\result.html:85
+#: .\templates\teacher\bank_sample.html:110
 msgid "Тақырып"
 msgstr "Тема"
 
-#: .\apps\quiz\forms.py:175 .\apps\quiz\forms.py:524
-#: .\templates\teacher\bank.html:25 .\templates\teacher\bank_sample.html:111
-#: .\templates\teacher\question_list.html:30
+#: .\apps\quiz\forms.py:175 .\apps\quiz\forms.py:548
+#: .\apps\quiz\question_import.py:475 .\templates\teacher\bank.html:25
+#: .\templates\teacher\bank_sample.html:111
+#: .\templates\teacher\question_list.html:31
 msgid "Тақырыпша"
 msgstr "Подтема"
 
-#: .\apps\quiz\forms.py:180 .\apps\quiz\forms.py:531
+#: .\apps\quiz\forms.py:180 .\apps\quiz\forms.py:555
 #: .\templates\quiz\result.html:60 .\templates\teacher\bank_sample.html:112
-#: .\templates\teacher\question_list.html:31
+#: .\templates\teacher\question_list.html:32
 msgid "Деңгей"
 msgstr "Уровень"
 
-#: .\apps\quiz\forms.py:185 .\apps\quiz\forms.py:361 .\apps\quiz\forms.py:536
+#: .\apps\quiz\forms.py:185 .\apps\quiz\forms.py:385 .\apps\quiz\forms.py:560
 #: .\templates\teacher\context_list.html:19
-#: .\templates\teacher\question_list.html:32
+#: .\templates\teacher\question_list.html:33
 #: .\templates\teacher\results.html:35
 msgid "Тіл"
 msgstr "Язык"
@@ -254,15 +256,17 @@ msgstr "Контекст"
 msgid "Жоқ (жеке сұрақ)"
 msgstr "Нет (отдельный вопрос)"
 
-#: .\apps\quiz\forms.py:194 .\templates\teacher\bank_sample.html:114
+#: .\apps\quiz\forms.py:194 .\apps\quiz\question_import.py:69
+#: .\templates\teacher\bank_sample.html:114
 msgid "Сұрақ мәтіні"
 msgstr "Текст вопроса"
 
-#: .\apps\quiz\forms.py:195 .\apps\quiz\forms.py:364
+#: .\apps\quiz\forms.py:195 .\apps\quiz\forms.py:388
+#: .\apps\quiz\question_import.py:70 .\apps\quiz\question_import.py:78
 msgid "Код"
 msgstr "Код"
 
-#: .\apps\quiz\forms.py:202 .\apps\quiz\forms.py:273 .\apps\quiz\forms.py:371
+#: .\apps\quiz\forms.py:202 .\apps\quiz\forms.py:273 .\apps\quiz\forms.py:395
 msgid "Сурет"
 msgstr "Изображение"
 
@@ -283,72 +287,87 @@ msgstr "Вариант ответа"
 msgid "Дұрыс жауапты белгілеңіз."
 msgstr "Отметьте правильный ответ."
 
-#: .\apps\quiz\forms.py:363 .\templates\teacher\question_list.html:33
+#: .\apps\quiz\forms.py:360
+msgid "Excel файлы (.xlsx)"
+msgstr "Файл Excel (.xlsx)"
+
+#: .\apps\quiz\forms.py:370
+msgid "Файл Excel (.xlsx) пішімінде болуы керек."
+msgstr "Файл должен быть в формате Excel (.xlsx)."
+
+#: .\apps\quiz\forms.py:373
+#, python-format
+msgid "Файл тым үлкен: ең көбі %(size)s МБ."
+msgstr "Файл слишком большой: не более %(size)s МБ."
+
+#: .\apps\quiz\forms.py:387 .\apps\quiz\question_import.py:78
+#: .\templates\teacher\question_list.html:34
 msgid "Мәтіні"
 msgstr "Текст"
 
-#: .\apps\quiz\forms.py:370 .\templates\teacher\context_list.html:18
+#: .\apps\quiz\forms.py:394 .\apps\quiz\question_import.py:78
+#: .\apps\quiz\question_import.py:475 .\templates\teacher\context_list.html:18
 msgid "Атауы"
 msgstr "Название"
 
-#: .\apps\quiz\forms.py:372
+#: .\apps\quiz\forms.py:396
 msgid "Белсенді"
 msgstr "Активен"
 
-#: .\apps\quiz\forms.py:384
+#: .\apps\quiz\forms.py:408
 msgid ""
 "Бұл контекстке басқа тілдегі сұрақтар байланған, тілін өзгертуге болмайды."
 msgstr ""
 "К этому контексту привязаны вопросы на другом языке, язык изменить нельзя."
 
-#: .\apps\quiz\forms.py:421
+#: .\apps\quiz\forms.py:445
 #, python-format
 msgid "Бұл топтар басқа пәнге жатады: %(groups)s"
 msgstr "Эти группы относятся к другому предмету: %(groups)s"
 
-#: .\apps\quiz\forms.py:451
+#: .\apps\quiz\forms.py:475
 msgid "Сұрақтар тілі"
 msgstr "Язык вопросов"
 
-#: .\apps\quiz\forms.py:467 .\apps\quiz\services.py:901
+#: .\apps\quiz\forms.py:491 .\apps\quiz\services.py:901
 #: .\templates\quiz\dashboard.html:62 .\templates\teacher\results.html:34
 msgid "Сессия"
 msgstr "Сессия"
 
-#: .\apps\quiz\forms.py:470
+#: .\apps\quiz\forms.py:494
 msgid "Барлық сессия"
 msgstr "Все сессии"
 
-#: .\apps\quiz\forms.py:473 .\apps\quiz\services.py:899
+#: .\apps\quiz\forms.py:497 .\apps\quiz\services.py:899
 #: .\templates\teacher\results.html:33
 msgid "Топ"
 msgstr "Группа"
 
-#: .\apps\quiz\forms.py:476
+#: .\apps\quiz\forms.py:500
 msgid "Барлық топ"
 msgstr "Все группы"
 
-#: .\apps\quiz\forms.py:521
+#: .\apps\quiz\forms.py:545
 msgid "Барлық тақырып"
 msgstr "Все темы"
 
-#: .\apps\quiz\forms.py:527
+#: .\apps\quiz\forms.py:551
 msgid "Барлық тақырыпша"
 msgstr "Все подтемы"
 
-#: .\apps\quiz\forms.py:532
+#: .\apps\quiz\forms.py:556
 msgid "Барлық деңгей"
 msgstr "Все уровни"
 
-#: .\apps\quiz\forms.py:537
+#: .\apps\quiz\forms.py:561
 msgid "Барлық тіл"
 msgstr "Все языки"
 
-#: .\apps\quiz\forms.py:540
+#: .\apps\quiz\forms.py:564
 msgid "Іздеу"
 msgstr "Поиск"
 
-#: .\apps\quiz\forms.py:549
+#: .\apps\quiz\forms.py:573
 msgid "Мәтін немесе код"
 msgstr "Текст или код"
 
@@ -495,12 +514,12 @@ msgstr "изображение"
 #: .\apps\quiz\models.py:206 .\apps\quiz\models.py:247
 #: .\templates\teacher\context_list.html:30
 #: .\templates\teacher\question_form.html:14
-#: .\templates\teacher\question_list.html:48
+#: .\templates\teacher\question_list.html:49
 msgid "демо"
 msgstr "демо"
 
 #: .\apps\quiz\models.py:211 .\apps\quiz\models.py:237
-#: .\templates\teacher\question_list.html:46
+#: .\templates\teacher\question_list.html:47
 msgid "контекст"
 msgstr "контекст"
 
@@ -639,6 +658,154 @@ msgstr "вопрос варианта"
 msgid "нұсқадағы сұрақтар"
 msgstr "вопросы варианта"
 
+#: .\apps\quiz\question_import.py:65
+msgid "Тақырыпша (01–20)"
+msgstr "Подтема (01–20)"
+
+#: .\apps\quiz\question_import.py:66
+msgid "Деңгей (A/B/C)"
+msgstr "Уровень (A/B/C)"
+
+#: .\apps\quiz\question_import.py:67 .\apps\quiz\question_import.py:78
+msgid "Тіл (kk/ru)"
+msgstr "Язык (kk/ru)"
+
+#: .\apps\quiz\question_import.py:68
+msgid "Контекст кілті"
+msgstr "Ключ контекста"
+
+#: .\apps\quiz\question_import.py:72
+msgid "Дұрыс жауап (A–D)"
+msgstr "Правильный ответ (A–D)"
+
+#: .\apps\quiz\question_import.py:78
+msgid "Кілт"
+msgstr "Ключ"
+
+#: .\apps\quiz\question_import.py:162
+msgid "Файл оқылмады: ол Excel (.xlsx) файлы болуы керек."
+msgstr "Не удалось прочитать файл: это должен быть файл Excel (.xlsx)."
+
+#: .\apps\quiz\question_import.py:177
+#, python-format
+msgid "Файлда жол тым көп: бір парақта ең көбі %(count)s жол."
+msgstr "В файле слишком много строк: на одном листе не более %(count)s строк."
+
+#: .\apps\quiz\question_import.py:186
+#, python-format
+msgid "«%(sheet)s» парағы, %(row)s-жол, «%(column)s»: %(message)s"
+msgstr "Лист «%(sheet)s», строка %(row)s, «%(column)s»: %(message)s"
+
+#: .\apps\quiz\question_import.py:201
+#, python-format
+msgid "«%(key)s» контекстіне %(total)s сұрақ байланады, ең көбі %(max)s."
+msgstr "К контексту «%(key)s» привязывается %(total)s вопросов, максимум %(max)s."
+
+#: .\apps\quiz\question_import.py:206
+msgid "Файлда сұрақ жоқ."
+msgstr "В файле нет вопросов."
+
+#: .\apps\quiz\question_import.py:238 .\apps\quiz\question_import.py:250
+#: .\apps\quiz\question_import.py:254 .\apps\quiz\question_import.py:309
+msgid "бос болмауы керек."
+msgstr "не должно быть пустым."
+
+#: .\apps\quiz\question_import.py:245
+#, python-format
+msgid "«%(key)s» кілті %(row)s-жолда бар."
+msgstr "ключ «%(key)s» уже есть в строке %(row)s."
+
+#: .\apps\quiz\question_import.py:252 .\apps\quiz\question_import.py:306
+msgid "kk немесе ru болуы керек."
+msgstr "должно быть kk или ru."
+
+#: .\apps\quiz\question_import.py:299
+#, python-format
+msgid "пәнде мұндай тақырыпша жоқ (01–%(max)s)."
+msgstr "в предмете нет такой подтемы (01–%(max)s)."
+
+#: .\apps\quiz\question_import.py:303
+msgid "A, B немесе C болуы керек."
+msgstr "должно быть A, B или C."
+
+#: .\apps\quiz\question_import.py:314
+msgid "жауап нұсқасы бос болмауы керек."
+msgstr "вариант ответа не должен быть пустым."
+
+#: .\apps\quiz\question_import.py:321
+#, python-format
+msgid "%(letters)s әріптерінің бірі болуы керек."
+msgstr "должна быть одна из букв %(letters)s."
+
+#: .\apps\quiz\question_import.py:333
+#, python-format
+msgid "«%(key)s» кілті «%(contexts)s» парағында жоқ."
+msgstr "ключа «%(key)s» нет на листе «%(contexts)s»."
+
+#: .\apps\quiz\question_import.py:341
+msgid "контекст пен сұрақтың тілі бірдей болуы керек."
+msgstr "язык контекста и вопроса должен совпадать."
+
+#: .\apps\quiz\question_import.py:404
+#, python-format
+msgid "Қосылды: сұрақтар — %(questions)s, контексттер — %(contexts)s."
+msgstr "Добавлено: вопросов — %(questions)s, контекстов — %(contexts)s."
+
+#: .\apps\quiz\question_import.py:410
+#, python-format
+msgid "Банкте бұрыннан бар, өткізілді — жолдар: %(rows)s."
+msgstr "Уже есть в банке, пропущены строки: %(rows)s."
+
+#: .\apps\quiz\question_import.py:453
+msgid "Нұсқаулық"
+msgstr "Инструкция"
+
+#: .\apps\quiz\question_import.py:458
+#, python-format
+msgid "Сұрақтарды импорттау: %(subject)s"
+msgstr "Импорт вопросов: %(subject)s"
+
+#: .\apps\quiz\question_import.py:460
+#, python-format
+msgid "«%(sheet)s» парағы: бір жол — бір сұрақ."
+msgstr "Лист «%(sheet)s»: одна строка — один вопрос."
+
+#: .\apps\quiz\question_import.py:461
+msgid "Тақырыпша, деңгей, тіл, мәтін, 4 нұсқа және дұрыс жауап — міндетті."
+msgstr "Подтема, уровень, язык, текст, 4 варианта и правильный ответ — обязательны."
+
+#: .\apps\quiz\question_import.py:462
+msgid ""
+"Контекстік сұрақта «Контекст кілті» бағанына контекстің кілтін жазыңыз "
+"(мысалы, K1)."
+msgstr "Для вопроса к контексту укажите ключ контекста в столбце «Ключ контекста» (например, K1)."
+
+#: .\apps\quiz\question_import.py:464
+#, python-format
+msgid ""
+"«%(sheet)s» парағы: кілт, атауы, тіл, мәтін, код. Бір контекстке ең көбі "
+"%(max)s сұрақ."
+msgstr "Лист «%(sheet)s»: ключ, название, язык, текст, код. К одному контексту — не более %(max)s вопросов."
+
+#: .\apps\quiz\question_import.py:467
+msgid ""
+"Суреттер импортталмайды: суреті бар сұрақты импорттан кейін форма арқылы "
+"толықтырыңыз."
+msgstr "Изображения не импортируются: добавьте их к вопросам через форму после импорта."
+
+#: .\apps\quiz\question_import.py:468
+msgid ""
+"Қате болса, ештеңе сақталмайды. Банкте бұрыннан бар сұрақ қайта қосылмайды."
+msgstr "При ошибке ничего не сохраняется. Вопросы, которые уже есть в банке, повторно не добавляются."
+
+#: .\apps\quiz\question_import.py:470
+msgid "Мысал:"
+msgstr "Пример:"
+
+#: .\apps\quiz\question_import.py:474
+msgid "Пәннің тақырыпшалары:"
+msgstr "Подтемы предмета:"
+
 #: .\apps\quiz\services.py:348
 #, python-format
 msgid ""
@@ -694,26 +861,26 @@ msgstr "Время (мин)"
 msgid "Бұл тақырып бойынша таңдалған тілде сұрақ әлі жоқ."
 msgstr "По этой теме на выбранном языке пока нет вопросов."
 
-#: .\apps\quiz\teacher_views.py:153
+#: .\apps\quiz\teacher_views.py:164
 msgid "Сұрақ сақталды. Келесісін енгізіңіз."
 msgstr "Вопрос сохранён. Введите следующий."
 
-#: .\apps\quiz\teacher_views.py:156
+#: .\apps\quiz\teacher_views.py:167
 msgid "Сұрақ сақталды."
 msgstr "Вопрос сохранён."
 
-#: .\apps\quiz\teacher_views.py:201
+#: .\apps\quiz\teacher_views.py:212
 msgid "Көшірмесі жасалды, қажет болса өңдеңіз."
 msgstr "Копия создана, при необходимости отредактируйте её."
 
-#: .\apps\quiz\teacher_views.py:213
+#: .\apps\quiz\teacher_views.py:224
 #, python-format
 msgid ""
 "Контекстте %(count)s белсенді сұрақ бар, бұл сұрақты белсендіруге болмайды."
 msgstr ""
 "В контексте уже %(count)s активных вопросов, этот вопрос активировать нельзя."
 
-#: .\apps\quiz\teacher_views.py:243
+#: .\apps\quiz\teacher_views.py:293
 msgid "Контекст сақталды."
 msgstr "Контекст сохранён."
 
@@ -1310,6 +1477,7 @@ msgstr "Контекст №%(id)s"
 
 #: .\templates\teacher\context_form.html:12
 #: .\templates\teacher\question_form.html:17
+#: .\templates\teacher\question_import.html:10
 msgid "Тізімге оралу"
 msgstr "Вернуться к списку"
 
@@ -1325,12 +1493,12 @@ msgstr "Добавить вопрос"
 #: .\templates\teacher\context_form.html:54
 #: .\templates\teacher\context_list.html:31
 #: .\templates\teacher\question_form.html:13
-#: .\templates\teacher\question_list.html:49
+#: .\templates\teacher\question_list.html:50
 msgid "белсенді емес"
 msgstr "неактивен"
 
 #: .\templates\teacher\context_form.html:56
-#: .\templates\teacher\question_list.html:52
+#: .\templates\teacher\question_list.html:53
 msgid "Өңдеу"
 msgstr "Редактировать"
 
@@ -1339,7 +1507,7 @@ msgid "Әзірге сұрақ жоқ."
 msgstr "Вопросов пока нет."
 
 #: .\templates\teacher\context_list.html:21
-#: .\templates\teacher\question_list.html:34
+#: .\templates\teacher\question_list.html:35
 msgid "Әрекеттер"
 msgstr "Действия"
 
@@ -1366,7 +1534,7 @@ msgstr "Редактирование вопроса"
 #: .\templates\teacher\question_form.html:4
 #: .\templates\teacher\question_form.html:10
 #: .\templates\teacher\question_form.html:15
-#: .\templates\teacher\question_list.html:10
+#: .\templates\teacher\question_list.html:11
 msgid "Жаңа сұрақ"
 msgstr "Новый вопрос"
 
@@ -1429,33 +1597,107 @@ msgstr "Сохранить и добавить следующий"
 msgid "Алдын ала қарау (студент осылай көреді)"
 msgstr "Предпросмотр (так увидит студент)"
 
-#: .\templates\teacher\question_list.html:20
+#: .\templates\teacher\question_import.html:4
+msgid "Сұрақтарды импорттау"
+msgstr "Импорт вопросов"
+
+#: .\templates\teacher\question_import.html:9
+msgid "Сұрақтарды Excel-ден импорттау"
+msgstr "Импорт вопросов из Excel"
+
+#: .\templates\teacher\question_import.html:15
+msgid "Файлда қате бар, ештеңе сақталмады. Түзетіп, қайта жүктеңіз:"
+msgstr "В файле есть ошибки, ничего не сохранено. Исправьте и загрузите снова:"
+
+#: .\templates\teacher\question_import.html:27
+msgid "Үлгі файлды жүктеп алу"
+msgstr "Скачать шаблон"
+
+#: .\templates\teacher\question_import.html:30
+msgid "Импорттау"
+msgstr "Импортировать"
+
+#: .\templates\teacher\question_import.html:36
+msgid "Файлды қалай толтыру керек"
+msgstr "Как заполнить файл"
+
+#: .\templates\teacher\question_import.html:38
+msgid ""
+"Үлгі файлды жүктеп алыңыз: онда бағандар, тізімнен таңдау және пәннің "
+"тақырыпшалары бар."
+msgstr "Скачайте шаблон: в нём есть столбцы, выбор из списка и подтемы предмета."
+
+#: .\templates\teacher\question_import.html:39
+#, python-format
+msgid ""
+"«%(questions_sheet)s» парағы: бір жол — бір сұрақ. Тақырыпша (01–20), деңгей "
+"(A/B/C), тіл (kk/ru), сұрақ мәтіні, 4 жауап нұсқасы және дұрыс жауап әрпі (A–"
+"D) міндетті; код — міндетті емес."
+msgstr "Лист «%(questions_sheet)s»: одна строка — один вопрос. Подтема (01–20), уровень (A/B/C), язык (kk/ru), текст вопроса, 4 варианта ответа и буква правильного ответа (A–D) обязательны; код — необязателен."
+
+#: .\templates\teacher\question_import.html:40
+#, python-format
+msgid ""
+"«%(contexts_sheet)s» парағы (міндетті емес): кілт (мысалы, K1), атауы, тіл, "
+"мәтін, код. Контекстік сұрақта «Контекст кілті» бағанына сол кілтті жазыңыз; "
+"бір контекстке ең көбі %(max)s сұрақ."
+msgstr "Лист «%(contexts_sheet)s» (необязательный): ключ (например, K1), название, язык, текст, код. Для вопроса к контексту укажите этот ключ в столбце «Ключ контекста»; к одному контексту — не более %(max)s вопросов."
+
+#: .\templates\teacher\question_import.html:41
+msgid "Файлды осы бетте жүктеңіз. Сұрақтар таңдалған пәнге қосылады."
+msgstr "Загрузите файл на этой странице. Вопросы добавятся в выбранный предмет."
+
+#: .\templates\teacher\question_import.html:44
+msgid "Қате болса, ештеңе сақталмайды: қателер жол нөмірімен көрсетіледі."
+msgstr "При ошибке ничего не сохраняется: ошибки показываются с номером строки."
+
+#: .\templates\teacher\question_import.html:45
+msgid ""
+"Банкте бұрыннан бар сұрақ (мәтіні, тілі, тақырыпшасы бірдей) қайта "
+"қосылмайды."
+msgstr "Вопрос, который уже есть в банке (тот же текст, язык и подтема), повторно не добавляется."
+
+#: .\templates\teacher\question_import.html:46
+msgid ""
+"Суреттер импортталмайды: суреті бар сұрақты кейін форма арқылы толықтырыңыз."
+msgstr "Изображения не импортируются: добавьте их к вопросу позже через форму."
+
+#: .\templates\teacher\question_import.html:47
+#, python-format
+msgid "Бір парақта ең көбі %(max)s жол."
+msgstr "На одном листе не более %(max)s строк."
+
+#: .\templates\teacher\question_list.html:10
+msgid "Excel-ден импорт"
+msgstr "Импорт из Excel"
+
+#: .\templates\teacher\question_list.html:21
 #: .\templates\teacher\results.html:16
 msgid "Сүзу"
 msgstr "Фильтровать"
 
-#: .\templates\teacher\question_list.html:21
+#: .\templates\teacher\question_list.html:22
 #: .\templates\teacher\results.html:17
 msgid "Тазалау"
 msgstr "Сбросить"
 
-#: .\templates\teacher\question_list.html:47
+#: .\templates\teacher\question_list.html:48
 msgid "код"
 msgstr "код"
 
-#: .\templates\teacher\question_list.html:55
+#: .\templates\teacher\question_list.html:56
 msgid "Көшіру"
 msgstr "Копировать"
 
-#: .\templates\teacher\question_list.html:61
+#: .\templates\teacher\question_list.html:62
 msgid "Белсенді емес ету"
 msgstr "Сделать неактивным"
 
-#: .\templates\teacher\question_list.html:63
+#: .\templates\teacher\question_list.html:64
 msgid "Белсендіру"
 msgstr "Активировать"
 
-#: .\templates\teacher\question_list.html:69
+#: .\templates\teacher\question_list.html:70
 msgid "Сұрақ табылмады."
 msgstr "Вопросы не найдены."
 

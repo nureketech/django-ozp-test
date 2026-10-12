@@ -32,5 +32,9 @@ PRACTICE_QUESTIONS = 10
 MAX_IMAGE_MB = 2
 IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "webp"]
 
+# Сұрақтарды Excel-ден импорттау: файлдың ең үлкен өлшемі (МБ) және жол саны
+IMPORT_MAX_MB = 5
+IMPORT_MAX_ROWS = 2000
+
 # Бұрынғы (бір пәнді) деректердің пәні: load_topics, load_demo, loadtest_data
 INFORMATICS_CODE = "informatics"

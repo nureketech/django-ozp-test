@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.accounts.models import StudyGroup
 
-from .constants import ANSWERS_PER_QUESTION, QUESTIONS_PER_CONTEXT
+from .constants import ANSWERS_PER_QUESTION, IMPORT_MAX_MB, QUESTIONS_PER_CONTEXT
 from .models import (
     LEVEL_FULL_DESCRIPTIONS,
     LEVEL_SHORT_DESCRIPTIONS,
@@ -349,6 +349,30 @@ AnswerFormSet = forms.inlineformset_factory(
     validate_max=True,
     can_delete=False,
 )
+
+
+# ---------- Сұрақтарды Excel-ден импорттау ----------
+
+
+class QuestionImportForm(forms.Form):
+    """Excel файлын жүктеу: тек .xlsx, IMPORT_MAX_MB-тан аспайды (мазмұнын question_import тексереді)."""
+
+    file = forms.FileField(label=_("Excel файлы (.xlsx)"))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["file"].widget.attrs["accept"] = ".xlsx"
+        add_bootstrap_classes(self)
+
+    def clean_file(self):
+        file = self.cleaned_data["file"]
+        if not file.name.lower().endswith(".xlsx"):
+            raise forms.ValidationError(_("Файл Excel (.xlsx) пішімінде болуы керек."))
+        if file.size > IMPORT_MAX_MB * 1024 * 1024:
+            raise forms.ValidationError(
+                _("Файл тым үлкен: ең көбі %(size)s МБ.") % {"size": IMPORT_MAX_MB}
+            )
+        return file
 
 
 # ---------- Контекст формасы ----------

@@ -5,3 +5,5 @@ dj-database-url>=2.0
 psycopg[binary]>=3.2
 # Серверде (Linux) Django-ны іске қосатын WSGI-сервер
 gunicorn>=23.0
+# Сұрақтарды Excel (.xlsx) файлынан импорттау
+openpyxl>=3.1

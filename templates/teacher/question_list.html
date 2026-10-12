@@ -7,6 +7,7 @@
 
 <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
     <h1 class="h4 mb-0 me-auto">{% translate "Сұрақтар" %} <span class="text-muted fs-6">({{ page.paginator.count }})</span></h1>
+    <a class="btn btn-outline-primary" href="{% url 'quiz:teacher_question_import' %}">{% translate "Excel-ден импорт" %}</a>
     <a class="btn btn-primary" href="{% url 'quiz:teacher_question_create' %}">{% translate "Жаңа сұрақ" %}</a>
 </div>
 

@@ -24,6 +24,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import escape
 from django.utils.translation import override
+from openpyxl import Workbook, load_workbook
 from PIL import Image
 
 from apps.accounts.models import StudyGroup
@@ -60,6 +61,7 @@ from .models import (
     Subtopic,
     Topic,
 )
+from .question_import import CONTEXTS_SHEET, QUESTIONS_SHEET
 from .services import (
     AttemptError,
     attempt_deadline,
@@ -78,6 +80,7 @@ from .services import (
     student_language,
     visible_sessions,
 )
+from .teacher_views import XLSX_CONTENT_TYPE
 
 
 # Информатиканың тест уақыты (TZ.md, 10.1)
@@ -3892,3 +3895,208 @@ class GroupLanguageTests(StudentSubjectTestCase):
         self.student.profile.group = None
         self.student.profile.save()
         self.assertIsNone(student_language(self.student))
+
+
+# ---------- Сұрақтарды Excel-ден импорттау ----------
+
+
+def xlsx_file(questions=(), contexts=None, name="questions.xlsx"):
+    """Импорт файлы: «Сұрақтар» парағы (және қажет болса «Контексттер»), 1-жол — тақырыптар."""
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = QUESTIONS_SHEET
+    sheet.append(["header"] * 11)
+    for row in questions:
+        sheet.append(list(row))
+    if contexts is not None:
+        context_sheet = workbook.create_sheet(CONTEXTS_SHEET)
+        context_sheet.append(["header"] * 5)
+        for row in contexts:
+            context_sheet.append(list(row))
+    output = BytesIO()
+    workbook.save(output)
+    return SimpleUploadedFile(name, output.getvalue())
+
+
+def question_row(subtopic="03", level="B", language="kk", context="", text="ЭЕМ?", **extra):
+    """«Сұрақтар» парағының бір жолы (әдепкіде дұрыс толтырылған, дұрыс жауап — A)."""
+    row = [subtopic, level, language, context, text, extra.get("code", "")]
+    row += extra.get("answers", ["ENIAC", "IBM PC", "Apple I", "Altair"])
+    row.append(extra.get("correct", "A"))
+    return row
+
+
+class QuestionImportTests(TeacherTestCase):
+    def upload(self, file):
+        return self.client.post(reverse("quiz:teacher_question_import"), {"file": file})
+
+    def messages(self, response):
+        return [str(message) for message in response.wsgi_request._messages]
+
+    def test_page_opens_from_question_list(self):
+        response = self.client.get(reverse("quiz:teacher_questions"))
+        self.assertContains(response, reverse("quiz:teacher_question_import"))
+        response = self.client.get(reverse("quiz:teacher_question_import"))
+        self.assertContains(response, reverse("quiz:teacher_question_import_template"))
+
+    def test_only_teacher_can_open(self):
+        self.client.force_login(make_student())
+        for url_name in ["teacher_question_import", "teacher_question_import_template"]:
+            with self.subTest(url_name=url_name):
+                self.assertEqual(self.client.get(reverse(f"quiz:{url_name}")).status_code, 302)
+
+    def test_template_file(self):
+        response = self.client.get(reverse("quiz:teacher_question_import_template"))
+        self.assertEqual(response["Content-Type"], XLSX_CONTENT_TYPE)
+        self.assertIn("questions-informatics.xlsx", response["Content-Disposition"])
+        workbook = load_workbook(BytesIO(response.content))
+        self.assertEqual(workbook.sheetnames[:2], [QUESTIONS_SHEET, CONTEXTS_SHEET])
+        self.assertEqual(workbook[QUESTIONS_SHEET].max_column, 11)
+        # Нұсқаулықта пәннің 20 тақырыпшасы
+        guide = [row[0] for row in workbook.worksheets[2].iter_rows(values_only=True)]
+        self.assertIn("01", guide)
+        self.assertIn("20", guide)
+
+    def test_import_single_and_context_questions(self):
+        code = "for i in range(3):\n    print(i)"
+        rows = [
+            question_row(text="Бірінші", code=code, correct="C"),
+            question_row(subtopic=5, level="A", context="K1", text="Кесте сұрағы"),
+        ]
+        contexts = [["K1", "Кесте", "kk", "Мәтін", ""]]
+        response = self.upload(xlsx_file(rows, contexts))
+        self.assertRedirects(response, reverse("quiz:teacher_questions"))
+
+        first = Question.objects.get(text="Бірінші")
+        self.assertEqual(first.subtopic, self.subtopic)
+        self.assertEqual((first.level, first.language, first.code), ("B", "kk", code))
+        self.assertIsNone(first.context)
+        self.assertFalse(first.is_demo)
+        self.assertEqual(
+            [(answer.text, answer.is_correct) for answer in first.answers.all()],
+            [("ENIAC", False), ("IBM PC", False), ("Apple I", True), ("Altair", False)],
+        )
+        second = Question.objects.get(text="Кесте сұрағы")
+        self.assertEqual(second.subtopic.number, 5)
+        self.assertEqual(second.context.title, "Кесте")
+        self.assertEqual(second.context.subject, informatics())
+        self.assertIn("Қосылды: сұрақтар — 2, контексттер — 1.", self.messages(response))
+
+    def test_cyrillic_letters_and_language_names(self):
+        # Кириллицаның А, В, С, Д әріптері латынша сияқты көрінеді
+        self.upload(xlsx_file([question_row(level="В", language="орыс", correct="Д")]))
+        question = Question.objects.get()
+        self.assertEqual((question.level, question.language), ("B", "ru"))
+        self.assertTrue(question.answers.get(text="Altair").is_correct)
+
+    def test_errors_save_nothing(self):
+        rows = [
+            question_row(text="Дұрыс сұрақ"),
+            question_row(level="D"),
+            question_row(subtopic=21),
+            question_row(language="en", text=""),
+            question_row(answers=["1", "", "3", "4"], correct="E"),
+        ]
+        response = self.upload(xlsx_file(rows))
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Question.objects.exists())
+        errors = response.context["result"]["errors"]
+        self.assertEqual(len(errors), 6)
+        self.assertIn("«Сұрақтар» парағы, 3-жол, «Деңгей (A/B/C)»", errors[0])
+        self.assertIn("4-жол, «Тақырыпша (01–20)»", errors[1])
+        self.assertContains(response, "ештеңе сақталмады")
+
+    def test_context_errors(self):
+        rows = [
+            question_row(context="K9"),
+            question_row(language="ru", context="K1", text="Тілі басқа"),
+        ]
+        contexts = [["K1", "Кесте", "kk", "Мәтін", ""], ["K1", "Қайталанған", "kk", "Мәтін", ""]]
+        errors = self.upload(xlsx_file(rows, contexts)).context["result"]["errors"]
+        self.assertTrue(any("«K1» кілті 2-жолда бар" in error for error in errors))
+        self.assertTrue(any("«K9» кілті «Контексттер» парағында жоқ" in error for error in errors))
+        self.assertTrue(any("тілі бірдей болуы керек" in error for error in errors))
+        self.assertFalse(Context.objects.exists())
+
+    def test_context_cannot_have_more_than_5_questions(self):
+        rows = [question_row(context="K1", text=f"Сұрақ {index}") for index in range(6)]
+        response = self.upload(xlsx_file(rows, [["K1", "Кесте", "kk", "Мәтін", ""]]))
+        errors = response.context["result"]["errors"]
+        self.assertEqual(len(errors), 1)
+        self.assertIn("6 сұрақ байланады, ең көбі 5", errors[0])
+        self.assertFalse(Question.objects.exists())
+
+    def test_duplicates_are_skipped(self):
+        self.create_question(text="Бұрынғы", language="kk")
+        rows = [
+            question_row(text="Бұрынғы"),
+            question_row(text="Жаңа"),
+            question_row(text="Жаңа"),
+        ]
+        response = self.upload(xlsx_file(rows))
+        self.assertEqual(Question.objects.filter(text="Жаңа").count(), 1)
+        self.assertEqual(Question.objects.filter(text="Бұрынғы").count(), 1)
+        self.assertIn(
+            "Қосылды: сұрақтар — 1, контексттер — 0. "
+            "Банкте бұрыннан бар, өткізілді — жолдар: 2, 4.",
+            self.messages(response),
+        )
+
+    def test_reimport_reuses_existing_context(self):
+        contexts = [["K1", "Кесте", "kk", "Мәтін", ""]]
+        self.upload(xlsx_file([question_row(context="K1", text="Бірінші")], contexts))
+        self.upload(xlsx_file([question_row(context="K1", text="Екінші")], contexts))
+        quiz_context = Context.objects.get()
+        self.assertEqual(quiz_context.questions.count(), 2)
+
+    def test_questions_go_to_selected_subject(self):
+        run_command("load_subjects", "--only", "mathematics")
+        mathematics = Subject.objects.get(code="mathematics")
+        self.teacher.profile.subjects.add(mathematics)
+        session = self.client.session
+        session["teacher_subject_id"] = mathematics.pk
+        session.save()
+        self.upload(xlsx_file([question_row(subtopic=3)]))
+        question = Question.objects.get()
+        self.assertEqual(question.subtopic.topic.subject, mathematics)
+
+    def test_file_checks(self):
+        response = self.upload(SimpleUploadedFile("questions.csv", b"a;b"))
+        self.assertIn("file", response.context["form"].errors)
+        response = self.upload(SimpleUploadedFile("questions.xlsx", b"not a zip"))
+        self.assertIn("Файл оқылмады", response.context["result"]["errors"][0])
+        response = self.upload(xlsx_file([]))
+        self.assertEqual(response.context["result"]["errors"], ["Файлда сұрақ жоқ."])
+        self.assertFalse(Question.objects.exists())
+
+    @mock.patch("apps.quiz.question_import.IMPORT_MAX_ROWS", 2)
+    def test_too_many_rows(self):
+        rows = [question_row(text=f"Сұрақ {index}") for index in range(3)]
+        response = self.upload(xlsx_file(rows))
+        self.assertIn("Файлда жол тым көп", response.context["result"]["errors"][0])
+        self.assertFalse(Question.objects.exists())
+
+    def test_first_sheet_is_used_without_questions_sheet(self):
+        workbook = Workbook()
+        workbook.active.title = "Лист1"
+        workbook.active.append(["header"] * 11)
+        workbook.active.append(question_row())
+        output = BytesIO()
+        workbook.save(output)
+        self.upload(SimpleUploadedFile("my.xlsx", output.getvalue()))
+        self.assertEqual(Question.objects.count(), 1)
+
+    def test_page_in_russian(self):
+        self.client.cookies["django_language"] = "ru"
+
+        def text_without_sheet_names(response):
+            # Тек парақ атаулары қазақша қалады — импорт оларды осы атаумен іздейді
+            text = visible_text(response)
+            return text.replace(QUESTIONS_SHEET, "").replace(CONTEXTS_SHEET, "")
+
+        response = self.client.get(reverse("quiz:teacher_question_import"))
+        self.assertNotRegex(text_without_sheet_names(response), KAZAKH_ONLY_LETTERS)
+        response = self.upload(xlsx_file([question_row(level="D")]))
+        text = text_without_sheet_names(response)
+        self.assertNotRegex(text, KAZAKH_ONLY_LETTERS)
+        self.assertIn("строка 2", text)

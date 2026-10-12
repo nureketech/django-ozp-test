@@ -20,18 +20,26 @@ from django.utils.translation import gettext as _
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 
-from .constants import QUESTIONS_PER_CONTEXT, QUESTIONS_TOTAL
+from .constants import IMPORT_MAX_ROWS, QUESTIONS_PER_CONTEXT, QUESTIONS_TOTAL
 from .forms import (
     AnswerFormSet,
     ContextForm,
     QuestionFilterForm,
     QuestionForm,
+    QuestionImportForm,
     ResultFilterForm,
     SampleVariantForm,
     SubjectSelectForm,
     initial_from_query,
 )
 from .models import Attempt, Context, Language, Question
+from .question_import import (
+    CONTEXTS_SHEET,
+    QUESTIONS_SHEET,
+    import_questions,
+    import_template,
+    result_message,
+)
 from .services import (
     AttemptError,
     bank_coverage,
@@ -50,6 +58,9 @@ from .services import (
 
 # Сұрақтар тізімінің бір бетіндегі жол саны
 QUESTIONS_PER_PAGE = 50
+
+# Excel (.xlsx) файлының MIME түрі
+XLSX_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
 # Оқытушының таңдалған пәні Django сессиясында осы кілтпен сақталады
 SUBJECT_SESSION_KEY = "teacher_subject_id"
@@ -214,6 +225,45 @@ def question_toggle(request, subject, pk):
             % {"count": QUESTIONS_PER_CONTEXT},
         )
     return redirect_back(request, "quiz:teacher_questions")
+
+
+# ---------- Сұрақтарды Excel-ден импорттау ----------
+
+
+@staff_member_required
+@subject_required
+def question_import(request, subject):
+    """
+    Сұрақтарды Excel-ден импорттау: GET — нұсқаулық пен форма, POST — файлды жүктеу.
+    Қате болса — ештеңе сақталмайды, қателер тізімі осы бетте көрсетіледі.
+    """
+    form = QuestionImportForm(request.POST or None, request.FILES or None)
+    result = None
+    if request.method == "POST" and form.is_valid():
+        result = import_questions(subject, form.cleaned_data["file"])
+        if not result["errors"]:
+            messages.success(request, result_message(result))
+            return redirect("quiz:teacher_questions")
+
+    context = {
+        "form": form,
+        "result": result,
+        "subject": subject,
+        "max_rows": IMPORT_MAX_ROWS,
+        "questions_per_context": QUESTIONS_PER_CONTEXT,
+        "questions_sheet": QUESTIONS_SHEET,
+        "contexts_sheet": CONTEXTS_SHEET,
+    }
+    return render(request, "teacher/question_import.html", context)
+
+
+@staff_member_required
+@subject_required
+def question_import_template(request, subject):
+    """Таңдалған пәннің бос үлгі файлы (.xlsx)."""
+    response = HttpResponse(import_template(subject), content_type=XLSX_CONTENT_TYPE)
+    response["Content-Disposition"] = f'attachment; filename="questions-{subject.code}.xlsx"'
+    return response
 
 
 # ---------- Контексттер ----------

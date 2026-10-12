@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Сұрақтарды импорттау" %}{% endblock %}
+
+{% block content %}
+
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+    <h1 class="h4 mb-0 me-auto">{% translate "Сұрақтарды Excel-ден импорттау" %} <span class="text-muted fs-6">({{ subject.name }})</span></h1>
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'quiz:teacher_questions' %}">{% translate "Тізімге оралу" %}</a>
+</div>
+
+{% if result.errors %}
+    <div class="alert alert-danger">
+        <div class="fw-semibold mb-1">{% translate "Файлда қате бар, ештеңе сақталмады. Түзетіп, қайта жүктеңіз:" %}</div>
+        <ul class="mb-0 small">
+            {% for error in result.errors %}<li>{{ error }}</li>{% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <form method="post" enctype="multipart/form-data" class="bg-white rounded shadow-sm p-3 p-md-4" novalidate>
+            {% csrf_token %}
+            <p class="mb-3">
+                <a class="btn btn-outline-primary" href="{% url 'quiz:teacher_question_import_template' %}">{% translate "Үлгі файлды жүктеп алу" %}</a>
+            </p>
+            {% include "teacher/_field.html" with field=form.file %}
+            <button type="submit" class="btn btn-primary">{% translate "Импорттау" %}</button>
+        </form>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="bg-white rounded shadow-sm p-3 p-md-4 small">
+            <h2 class="h6">{% translate "Файлды қалай толтыру керек" %}</h2>
+            <ol class="mb-3">
+                <li>{% translate "Үлгі файлды жүктеп алыңыз: онда бағандар, тізімнен таңдау және пәннің тақырыпшалары бар." %}</li>
+                <li>{% blocktranslate %}«{{ questions_sheet }}» парағы: бір жол — бір сұрақ. Тақырыпша (01–20), деңгей (A/B/C), тіл (kk/ru), сұрақ мәтіні, 4 жауап нұсқасы және дұрыс жауап әрпі (A–D) міндетті; код — міндетті емес.{% endblocktranslate %}</li>
+                <li>{% blocktranslate with max=questions_per_context %}«{{ contexts_sheet }}» парағы (міндетті емес): кілт (мысалы, K1), атауы, тіл, мәтін, код. Контекстік сұрақта «Контекст кілті» бағанына сол кілтті жазыңыз; бір контекстке ең көбі {{ max }} сұрақ.{% endblocktranslate %}</li>
+                <li>{% translate "Файлды осы бетте жүктеңіз. Сұрақтар таңдалған пәнге қосылады." %}</li>
+            </ol>
+            <ul class="text-muted mb-0">
+                <li>{% translate "Қате болса, ештеңе сақталмайды: қателер жол нөмірімен көрсетіледі." %}</li>
+                <li>{% translate "Банкте бұрыннан бар сұрақ (мәтіні, тілі, тақырыпшасы бірдей) қайта қосылмайды." %}</li>
+                <li>{% translate "Суреттер импортталмайды: суреті бар сұрақты кейін форма арқылы толықтырыңыз." %}</li>
+                <li>{% blocktranslate with max=max_rows %}Бір парақта ең көбі {{ max }} жол.{% endblocktranslate %}</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

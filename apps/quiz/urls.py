@@ -47,6 +47,16 @@ urlpatterns = [
         teacher_views.question_toggle,
         name="teacher_question_toggle",
     ),
+    path(
+        "teacher/questions/import/",
+        teacher_views.question_import,
+        name="teacher_question_import",
+    ),
+    path(
+        "teacher/questions/import/template/",
+        teacher_views.question_import_template,
+        name="teacher_question_import_template",
+    ),
     path("teacher/contexts/", teacher_views.context_list, name="teacher_contexts"),
     path(
         "teacher/contexts/new/",
