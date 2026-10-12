@@ -4130,6 +4130,15 @@ class QuestionImportImageTests(TeacherTestCase):
         self.assertEqual(len(errors), 1)
         self.assertIn("сурет ұяшықтың ішіне қойылған", errors[0])
 
+    def test_image_in_answer_cell_is_reported(self):
+        # Жауап ұяшығындағы «ұяшықтың ішіне» қойылған сурет «#VALUE!» мәтіні болып сақталмауы керек
+        answers = ["ENIAC", "#VALUE!", "Apple I", "Altair"]
+        errors = self.errors(self.upload(xlsx_file([question_row(answers=answers)])))
+        self.assertEqual(len(errors), 1)
+        self.assertIn("2-жол, «B»: сурет ұяшықтың ішіне қойылған", errors[0])
+        self.assertFalse(Question.objects.exists())
+        self.assertFalse(Answer.objects.filter(text="#VALUE!").exists())
+
     def test_context_image_in_wrong_column(self):
         rows = [question_row(context="K1")]
         contexts = [["K1", "Кесте", "kk", "Мәтін", ""]]

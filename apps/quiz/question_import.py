@@ -214,19 +214,24 @@ def read_images(sheet, sheet_title, rows, image_columns, headers, add_error):
     return contents
 
 
-def check_in_cell_images(sheet_title, rows, column, headers, add_error):
-    """«Сурет» бағанында ұяшықтың ішіне қойылған сурет болса — қате (импорт оны көрмейді)."""
+def check_in_cell_images(sheet_title, rows, columns, headers, add_error):
+    """
+    Сурет қойылатын бағандарда (сұрақ/контекст суреті, A–D жауаптары) ұяшықтың
+    ішіне қойылған сурет болса — қате: импорт оны көрмейді, ал жауап ұяшығында
+    «#VALUE!» мәтін болып сақталып қалар еді.
+    """
     for row, cells in rows:
-        if cell_text(cells[column]).strip() == IN_CELL_IMAGE:
-            add_error(
-                sheet_title,
-                row,
-                headers[column],
-                _(
-                    "сурет ұяшықтың ішіне қойылған — оны ұяшықтың үстіне қойыңыз "
-                    "(Кірістіру → Суреттер → Ұяшықтардың үстіне орналастыру)."
-                ),
-            )
+        for column in columns:
+            if cell_text(cells[column]).strip() == IN_CELL_IMAGE:
+                add_error(
+                    sheet_title,
+                    row,
+                    headers[column],
+                    _(
+                        "сурет ұяшықтың ішіне қойылған — оны ұяшықтың үстіне қойыңыз "
+                        "(Кірістіру → Суреттер → Ұяшықтардың үстіне орналастыру)."
+                    ),
+                )
 
 
 def image_file(content):
@@ -300,14 +305,20 @@ def import_questions(subject, file):
         question_headers(),
         add_error,
     )
-    check_in_cell_images(QUESTIONS_SHEET, question_rows, IMAGE, question_headers(), add_error)
+    check_in_cell_images(
+        QUESTIONS_SHEET,
+        question_rows,
+        [IMAGE, *range(FIRST_ANSWER, CORRECT)],
+        question_headers(),
+        add_error,
+    )
     context_images = {}
     if context_sheet is not None:
         context_images = read_images(
             context_sheet, CONTEXTS_SHEET, context_rows, [CONTEXT_IMAGE], context_headers(), add_error
         )
         check_in_cell_images(
-            CONTEXTS_SHEET, context_rows, CONTEXT_IMAGE, context_headers(), add_error
+            CONTEXTS_SHEET, context_rows, [CONTEXT_IMAGE], context_headers(), add_error
         )
 
     contexts = read_contexts(subject, context_rows, context_images, add_error)
