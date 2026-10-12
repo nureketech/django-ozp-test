@@ -112,6 +112,17 @@ LOGIN_URL = "accounts:login"
 LOGIN_REDIRECT_URL = "accounts:after_login"
 LOGOUT_REDIRECT_URL = "quiz:home"
 
+# Бірінші — негізгі хэшер; AccessCodeHasher — тек импорттағы кіру кодтарына
+# (студент бірінші кіргенде код негізгі хэшермен қайта сақталады)
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+    "apps.accounts.hashers.AccessCodeHasher",
+    "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+    "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
+    "django.contrib.auth.hashers.ScryptPasswordHasher",
+]
+
 # Django-ның дайын тексерулері, хабарламалары қазақша (apps/accounts/validators.py)
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "apps.accounts.validators.UserAttributeSimilarityValidator"},

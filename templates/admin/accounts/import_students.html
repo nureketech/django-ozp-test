@@ -1,0 +1,47 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% translate "Басты бет" %}</a>
+    &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+    &rsaquo; <a href="{% url 'admin:accounts_studygroup_changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+    &rsaquo; {{ title }}
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    {% if result.errors %}
+        <ul class="messagelist">
+            <li class="error">{% translate "Файлда қате бар, ештеңе сақталмады. Түзетіп, қайта жүктеңіз:" %}</li>
+        </ul>
+        <ul class="errorlist">
+            {% for error in result.errors %}<li>{{ error }}</li>{% endfor %}
+        </ul>
+    {% endif %}
+
+    <p>{% translate "Excel файлының бірінші парағы, бағандары: Аты-жөні, Топ, ИИН (1-жол — тақырыптар). Топтар алдымен осы бөлімде құрылуы керек." %}</p>
+    <ul>
+        <li>{% translate "Студенттің логині — ИИН, құпия сөзі — жүйе жасайтын 8 цифрлы код." %}</li>
+        <li>{% translate "Импорттан кейін «Аты-жөні, Топ, ИИН, Код» файлы бірден жүктеледі: кодтар тек сонда көрсетіледі, оны студенттерге таратыңыз." %}</li>
+        <li>{% translate "ИИН бұрыннан бар болса, студенттің аты-жөні мен тобы жаңартылады, коды өзгермейді." %}</li>
+        <li>{% translate "Қате болса, ештеңе сақталмайды. Код жоғалса — топтар немесе қолданушылар тізімінде «Жаңа код жасау» әрекеті." %}</li>
+    </ul>
+    <p><a class="button" href="{% url 'admin:accounts_studygroup_import_template' %}">{% translate "Үлгі файлды жүктеп алу" %}</a></p>
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        <fieldset class="module aligned">
+            <div class="form-row">
+                {{ form.file.errors }}
+                <label class="required" for="{{ form.file.id_for_label }}">{{ form.file.label }}:</label>
+                {{ form.file }}
+            </div>
+        </fieldset>
+        <div class="submit-row">
+            <input type="submit" class="default" value="{% translate 'Импорттау' %}">
+        </div>
+    </form>
+</div>
+{% endblock %}

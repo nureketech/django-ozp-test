@@ -26,6 +26,9 @@ from .constants import ANSWERS_PER_QUESTION, IMPORT_MAX_ROWS, QUESTIONS_PER_CONT
 from .models import Answer, Context, Language, Level, Question, Subtopic
 from .services import ANSWER_LETTERS
 
+# Excel (.xlsx) файлының MIME түрі
+XLSX_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
 # Парақ атаулары аударылмайды: импорт оларды осы атаумен іздейді
 QUESTIONS_SHEET = "Сұрақтар"
 CONTEXTS_SHEET = "Контексттер"

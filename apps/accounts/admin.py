@@ -1,19 +1,73 @@
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
+from django.db.models import Count
+from django.urls import path
 from django.utils.translation import gettext_lazy as _
 
 from apps.quiz.admin import TeacherSubjectAdminMixin
 
 from .forms import ProfileInlineFormSet
 from .models import Profile, StudyGroup
+from .student_import import codes_workbook, regenerate_codes
+from .views import import_students_template_view, import_students_view, xlsx_response
+
+
+def codes_file_response(request, rows):
+    """Жаңа кодтар файлы (немесе студент таңдалмаса — ескерту)."""
+    if not rows:
+        messages.warning(request, _("Таңдалғандардың арасында студент жоқ."))
+        return None
+    messages.success(request, _("%(count)s студентке жаңа код жасалды.") % {"count": len(rows)})
+    return xlsx_response(codes_workbook(rows), "student-codes")
+
+
+def only_for_superuser(actions, request, names):
+    """Кодтармен жұмыс істейтін әрекеттер тек әкімшіге көрінеді."""
+    if not request.user.is_superuser:
+        for name in names:
+            actions.pop(name, None)
+    return actions
 
 
 @admin.register(StudyGroup)
 class StudyGroupAdmin(TeacherSubjectAdminMixin, admin.ModelAdmin):
-    list_display = ["name", "subject", "language"]
+    list_display = ["name", "subject", "language", "student_count"]
     list_filter = ["subject", "language"]
     search_fields = ["name"]
+    # Тізімнің үстінде «Студенттерді импорттау» батырмасы (тек әкімшіге)
+    change_list_template = "admin/accounts/studygroup/change_list.html"
+    actions = ["regenerate_group_codes"]
+
+    def get_urls(self):
+        urls = [
+            path(
+                "import-students/",
+                self.admin_site.admin_view(import_students_view),
+                name="accounts_studygroup_import",
+            ),
+            path(
+                "import-students/template/",
+                self.admin_site.admin_view(import_students_template_view),
+                name="accounts_studygroup_import_template",
+            ),
+        ]
+        return urls + super().get_urls()
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(students=Count("profiles"))
+
+    @admin.display(description=_("студенттер"), ordering="students")
+    def student_count(self, obj):
+        return obj.students
+
+    def get_actions(self, request):
+        return only_for_superuser(super().get_actions(request), request, ["regenerate_group_codes"])
+
+    @admin.action(description=_("Топ студенттеріне жаңа код жасау"))
+    def regenerate_group_codes(self, request, queryset):
+        users = User.objects.filter(profile__group__in=queryset)
+        return codes_file_response(request, regenerate_codes(users))
 
 
 class ProfileInline(admin.StackedInline):
@@ -52,6 +106,14 @@ class CustomUserAdmin(UserAdmin):
     )
     list_display = ["username", "first_name", "last_name", "group_name", "is_staff"]
     list_filter = ["is_staff", "is_superuser", "profile__subjects", "profile__group"]
+    actions = ["regenerate_user_codes"]
+
+    def get_actions(self, request):
+        return only_for_superuser(super().get_actions(request), request, ["regenerate_user_codes"])
+
+    @admin.action(description=_("Студенттерге жаңа код жасау"))
+    def regenerate_user_codes(self, request, queryset):
+        return codes_file_response(request, regenerate_codes(queryset))
 
     def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change)

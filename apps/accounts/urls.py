@@ -7,7 +7,7 @@ from .forms import LoginForm
 app_name = "accounts"
 
 urlpatterns = [
-    path("register/", views.register, name="register"),
+    # Тіркелу жоқ: студенттерді әкімші admin-де Excel-ден импорттайды (ИИН + код)
     path(
         "login/",
         auth_views.LoginView.as_view(

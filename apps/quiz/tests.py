@@ -1351,8 +1351,7 @@ class TranslationTests(StudentTestCase):
         self.switch_language("ru")
         pages = {
             reverse("quiz:home"): "Подготовка к тесту ОЗП",
-            reverse("accounts:login"): "Ещё не зарегистрированы?",
-            reverse("accounts:register"): "Повторите пароль",
+            reverse("accounts:login"): "ИИН или логин",
         }
         for url, text in pages.items():
             with self.subTest(url=url):
@@ -1361,7 +1360,7 @@ class TranslationTests(StudentTestCase):
         response = self.client.post(
             reverse("accounts:login"), {"username": "student", "password": "wrong"}
         )
-        self.assertContains(response, "Неверный логин или пароль.")
+        self.assertContains(response, "Неверный ИИН (логин) или код (пароль).")
 
     def test_teacher_pages_are_in_russian(self):
         run_command("load_topics")
@@ -2095,12 +2094,6 @@ class FullTranslationTests(VariantTestCase):
                     reverse("accounts:login"),
                     {"username": "student", "password": "wrong"},
                 ),
-                "register": ("get", reverse("accounts:register"), {}),
-                "register errors": (
-                    "post",
-                    reverse("accounts:register"),
-                    {"username": "student", "password1": "123", "password2": "456"},
-                ),
             }
         )
 
@@ -2177,10 +2170,7 @@ class FullTranslationTests(VariantTestCase):
         self.client.cookies["django_language"] = "kk"
         english = ["This field", "Select a valid", "Enter a valid", "Ensure this", "password"]
         responses = {
-            "register": self.client.post(
-                reverse("accounts:register"),
-                {"username": "student", "password1": "123", "password2": "123"},
-            ),
+            "login": self.client.post(reverse("accounts:login"), {}),
         }
         self.client.force_login(self.teacher)
         responses["question"] = self.client.post(
@@ -3235,51 +3225,6 @@ class StudentResultBySubjectTests(StudentSubjectTestCase):
                 self.assertContains(response, subject.name_kk)
 
 
-class RegisterBySubjectTests(StudentSubjectTestCase):
-    def setUp(self):
-        super().setUp()
-        self.client.logout()
-
-    def test_groups_are_grouped_by_subject(self):
-        response = self.client.get(reverse("accounts:register"))
-        self.assertContains(response, 'optgroup label="Математика"')
-        self.assertContains(response, "МАТ-21 — Математика")
-        self.assertContains(response, "ИНФ-21 — Информатика")
-        choices = response.context["form"].fields["group"].choices
-        # Бос жол, сосын пәндер реті бойынша: информатика, көркем еңбек, математика
-        self.assertEqual(
-            [label for label, _options in choices[1:]],
-            ["Информатика", self.art_labor.name_kk, "Математика"],
-        )
-
-    def test_group_labels_follow_interface_language(self):
-        self.client.cookies["django_language"] = "ru"
-        response = self.client.get(reverse("accounts:register"))
-        self.assertContains(response, f"КЕ-21 — {self.art_labor.name_ru}")
-
-    def test_inactive_subject_groups_are_hidden(self):
-        self.art_labor.is_active = False
-        self.art_labor.save()
-        response = self.client.get(reverse("accounts:register"))
-        self.assertNotContains(response, "КЕ-21")
-
-    def test_register_into_math_group(self):
-        response = self.client.post(
-            reverse("accounts:register"),
-            {
-                "first_name": "Айгерім",
-                "last_name": "Сапарова",
-                "group": self.math_group.pk,
-                "username": "aigerim",
-                "password1": "Qazaq-Test-2026",
-                "password2": "Qazaq-Test-2026",
-            },
-        )
-        self.assertRedirects(response, reverse("quiz:dashboard"))
-        user = User.objects.get(username="aigerim")
-        self.assertEqual(user.profile.group.subject, self.mathematics)
-
-
 class HomeSubjectsTests(TestCase):
     def test_home_lists_subjects_with_duration(self):
         run_command("load_subjects")
@@ -3871,14 +3816,6 @@ class AjaxPracticeTests(VariantTestCase):
 
 class GroupLanguageTests(StudentSubjectTestCase):
     """Тест тілі — топтың оқыту тілі: топ құрғанда көрсетіледі, студент таңдамайды."""
-
-    def test_register_shows_group_language(self):
-        self.client.logout()
-        self.math_group.language = "ru"
-        self.math_group.save()
-        response = self.client.get(reverse("accounts:register"))
-        self.assertContains(response, "МАТ-21 — Математика (Орысша)")
-        self.assertContains(response, "ИНФ-21 — Информатика (Қазақша)")
 
     def test_dashboard_shows_test_language(self):
         response = self.client.get(reverse("quiz:dashboard"))

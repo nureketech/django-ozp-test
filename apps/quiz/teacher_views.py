@@ -26,7 +26,7 @@ from .forms import (
     ContextForm,
     QuestionFilterForm,
     QuestionForm,
-    QuestionImportForm,
+    ExcelImportForm,
     ResultFilterForm,
     SampleVariantForm,
     SubjectSelectForm,
@@ -36,6 +36,7 @@ from .models import Attempt, Context, Language, Question
 from .question_import import (
     CONTEXTS_SHEET,
     QUESTIONS_SHEET,
+    XLSX_CONTENT_TYPE,
     import_questions,
     import_template,
     result_message,
@@ -58,9 +59,6 @@ from .services import (
 
 # Сұрақтар тізімінің бір бетіндегі жол саны
 QUESTIONS_PER_PAGE = 50
-
-# Excel (.xlsx) файлының MIME түрі
-XLSX_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
 # Оқытушының таңдалған пәні Django сессиясында осы кілтпен сақталады
 SUBJECT_SESSION_KEY = "teacher_subject_id"
@@ -237,7 +235,7 @@ def question_import(request, subject):
     Сұрақтарды Excel-ден импорттау: GET — нұсқаулық пен форма, POST — файлды жүктеу.
     Қате болса — ештеңе сақталмайды, қателер тізімі осы бетте көрсетіледі.
     """
-    form = QuestionImportForm(request.POST or None, request.FILES or None)
+    form = ExcelImportForm(request.POST or None, request.FILES or None)
     result = None
     if request.method == "POST" and form.is_valid():
         result = import_questions(subject, form.cleaned_data["file"])

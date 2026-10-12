@@ -354,8 +354,8 @@ AnswerFormSet = forms.inlineformset_factory(
 # ---------- Сұрақтарды Excel-ден импорттау ----------
 
 
-class QuestionImportForm(forms.Form):
-    """Excel файлын жүктеу: тек .xlsx, IMPORT_MAX_MB-тан аспайды (мазмұнын question_import тексереді)."""
+class ExcelImportForm(forms.Form):
+    """Excel файлын жүктеу (сұрақтар мен студенттер импорты): тек .xlsx, IMPORT_MAX_MB-тан аспайды."""
 
     file = forms.FileField(label=_("Excel файлы (.xlsx)"))
 
