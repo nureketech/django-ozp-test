@@ -30,6 +30,7 @@ from .constants import (
 from .forms import (
     AnswerFormSet,
     ContextForm,
+    ExamSessionForm,
     QuestionFilterForm,
     QuestionForm,
     ExcelImportForm,
@@ -38,7 +39,7 @@ from .forms import (
     SubjectSelectForm,
     initial_from_query,
 )
-from .models import Attempt, Context, Language, Question
+from .models import Attempt, Context, ExamSession, Language, Question
 from .question_import import (
     CONTEXTS_SHEET,
     QUESTIONS_SHEET,
@@ -49,6 +50,7 @@ from .question_import import (
 )
 from .services import (
     AttemptError,
+    session_status,
     bank_coverage,
     build_variant,
     choose_subject,
@@ -73,6 +75,7 @@ SUBJECT_SESSION_KEY = "teacher_subject_id"
 LIST_PAGES = {
     "teacher_question_edit": "quiz:teacher_questions",
     "teacher_context_edit": "quiz:teacher_contexts",
+    "teacher_session_edit": "quiz:teacher_sessions",
 }
 
 
@@ -361,6 +364,56 @@ def bank_sample(request, subject):
     except AttemptError as error:
         context["error"] = str(error)
     return render(request, "teacher/bank_sample.html", context)
+
+
+# ---------- Тест сессиялары ----------
+
+
+def subject_sessions(subject):
+    """Пәннің сессиялары (оқытушы тек осыларды ашып, өзгерте алады)."""
+    return ExamSession.objects.filter(subject=subject)
+
+
+@staff_member_required
+@subject_required
+def session_list(request, subject):
+    """Сессиялар тізімі: уақыты, топтары, күйі, тест тапсырғандар саны."""
+    sessions = (
+        subject_sessions(subject)
+        .prefetch_related("groups")
+        .annotate(attempts_count=Count("attempts"))
+        .order_by("-opens_at")
+    )
+    now = timezone.now()
+    rows = [{"session": session, "status": session_status(session, now)} for session in sessions]
+    return render(request, "teacher/session_list.html", {"rows": rows})
+
+
+def session_form_page(request, subject, session=None):
+    """Сессия құру (session=None) және өңдеу беттерінің ортақ бөлігі."""
+    # Жаңа сессия оқытушының таңдалған пәніне жазылады
+    instance = session or ExamSession(subject=subject)
+    # Бос POST та тексерілуі керек (request.POST or None оны GET деп қабылдар еді)
+    data = request.POST if request.method == "POST" else None
+    form = ExamSessionForm(data, instance=instance, subject=subject)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, _("Сессия сақталды."))
+        return redirect("quiz:teacher_sessions")
+    return render(request, "teacher/session_form.html", {"form": form, "session": session})
+
+
+@staff_member_required
+@subject_required
+def session_create(request, subject):
+    return session_form_page(request, subject)
+
+
+@staff_member_required
+@subject_required
+def session_edit(request, subject, pk):
+    session = get_object_or_404(subject_sessions(subject), pk=pk)
+    return session_form_page(request, subject, session)
 
 
 # ---------- Нәтижелер ----------

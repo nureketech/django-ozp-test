@@ -87,7 +87,7 @@ def student_list(request):
 @superuser_required
 def student_add(request):
     """Бір студентті қосу: сәтті болса, оның коды экранда бір рет көрсетіледі."""
-    form = StudentForm(request.POST or None)
+    form = StudentForm(request.POST if request.method == "POST" else None)
     if request.method == "POST" and form.is_valid():
         data = form.cleaned_data
         student, code = create_student(data["full_name"], data["group"], data["iin"])
@@ -99,7 +99,7 @@ def student_add(request):
 def student_edit(request, pk):
     """Студенттің аты-жөнін, тобын, ИИН-ін өзгерту (коды өзгермейді)."""
     student = get_object_or_404(students(), pk=pk)
-    form = StudentForm(request.POST or None, user=student)
+    form = StudentForm(request.POST if request.method == "POST" else None, user=student)
     if request.method == "POST" and form.is_valid():
         data = form.cleaned_data
         update_student(student, data["full_name"], data["group"], data["iin"])

@@ -327,6 +327,19 @@ def dashboard_sessions(user, now=None):
     }
 
 
+def session_status(session, now=None):
+    """Оқытушының сессиялар тізімі үшін: inactive / upcoming / open / closed."""
+    if now is None:
+        now = timezone.now()
+    if not session.is_active:
+        return "inactive"
+    if now < session.opens_at:
+        return "upcoming"
+    if now < session.closes_at:
+        return "open"
+    return "closed"
+
+
 def is_session_open(session, now=None):
     """Сессия қазір ашық па: белсенді және opens_at <= уақыт < closes_at."""
     if now is None:

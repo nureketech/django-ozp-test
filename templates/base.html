@@ -79,17 +79,20 @@
                         <a class="nav-link{% if 'teacher_bank' in url_name %} active{% endif %}" href="{% url 'quiz:teacher_bank' %}">{% translate "Банк" %}</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link{% if 'teacher_session' in url_name %} active{% endif %}" href="{% url 'quiz:teacher_sessions' %}">{% translate "Сессиялар" %}</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link{% if 'teacher_results' in url_name or url_name == 'attempt_result' %} active{% endif %}" href="{% url 'quiz:teacher_results' %}">{% translate "Нәтижелер" %}</a>
                     </li>
-                    {# Студенттерді тек әкімші қосады, өңдейді, импорттайды (/students/) #}
+                    {# Студенттер, топтар, оқытушылар — тек әкімші (оқытушыға admin керек емес) #}
                     {% if user.is_superuser %}
                         <li class="nav-item">
                             <a class="nav-link{% if request.resolver_match.namespace == 'students' %} active{% endif %}" href="{% url 'students:list' %}">{% translate "Студенттер" %}</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'admin:index' %}">{% translate "Admin" %}</a>
+                        </li>
                     {% endif %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'admin:index' %}">{% translate "Admin" %}</a>
-                    </li>
                 {% elif user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link{% if url_name == 'dashboard' %} active{% endif %}" href="{% url 'quiz:dashboard' %}">{% translate "Кабинет" %}</a>

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% if session %}{% translate "Сессияны өңдеу" %}{% else %}{% translate "Жаңа сессия" %}{% endif %}{% endblock %}
+
+{% block content %}
+
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+    <h1 class="h4 mb-0 me-auto">{% if session %}{% translate "Сессияны өңдеу" %}{% else %}{% translate "Жаңа сессия" %}{% endif %}</h1>
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'quiz:teacher_sessions' %}">{% translate "Тізімге оралу" %}</a>
+</div>
+
+<div class="row">
+    <div class="col-lg-7">
+        <form method="post" class="bg-white rounded shadow-sm p-3 p-md-4" novalidate>
+            {% csrf_token %}
+            {% for error in form.non_field_errors %}<div class="alert alert-danger">{{ error }}</div>{% endfor %}
+            {% include "teacher/_field.html" with field=form.title %}
+            <div class="row">
+                <div class="col-md-6">{% include "teacher/_field.html" with field=form.opens_at %}</div>
+                <div class="col-md-6">{% include "teacher/_field.html" with field=form.closes_at %}</div>
+            </div>
+            {% if form.groups.field.queryset.exists %}
+                {% include "teacher/_radio_field.html" with field=form.groups inline=True %}
+                <div class="form-text mt-n2 mb-3">{{ form.groups.help_text }}</div>
+            {% else %}
+                <div class="alert alert-warning small">{% translate "Бұл пәнде топ әлі жоқ: сессия пәннің барлық тобына (кейін құрылатындарына да) арналады. Топтарды әкімші құрады." %}</div>
+            {% endif %}
+            {% include "teacher/_radio_field.html" with field=form.show_answers %}
+            <div class="form-check mb-3">
+                {{ form.is_active }}
+                <label class="form-check-label" for="{{ form.is_active.id_for_label }}">{{ form.is_active.label }}</label>
+            </div>
+            <button type="submit" class="btn btn-primary">{% translate "Сақтау" %}</button>
+        </form>
+    </div>
+    <div class="col-lg-5 mt-3 mt-lg-0">
+        <div class="bg-white rounded shadow-sm p-3 p-md-4 small text-muted">
+            <ul class="mb-0">
+                <li>{% translate "Студент тестті тек ашылу мен жабылу уақытының аралығында бастай алады; тест уақыты жабылу уақытынан аспайды." %}</li>
+                <li>{% translate "Уақыт — Алматы уақыты." %}</li>
+                <li>{% translate "Сессияны уақытша жасыру үшін «Белсенді» белгісін алып тастаңыз." %}</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

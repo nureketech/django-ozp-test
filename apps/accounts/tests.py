@@ -125,12 +125,14 @@ class NavigationTests(TestCase):
             "quiz:teacher_questions",
             "quiz:teacher_contexts",
             "quiz:teacher_bank",
-            "admin:index",
+            "quiz:teacher_sessions",
             "accounts:logout",
         ]:
             with self.subTest(url_name=url_name):
                 self.assertContains(response, reverse(url_name))
         self.assertNotContains(response, reverse("quiz:dashboard"))
+        # Оқытушыға admin керек емес — навбарда «Admin» жоқ
+        self.assertNotContains(response, f'href="{reverse("admin:index")}"')
 
 
 # ---------- Оқытушыны қосу: тек admin арқылы ----------
@@ -227,7 +229,10 @@ class AdminAddTeacherTests(TestCase):
 
 
 class TeacherAdminAccessTests(TestCase):
-    """Оқытушы (is_staff) admin-де тек өз пәнінің сессиялары мен топтарын басқарады."""
+    """
+    Оқытушыға (is_staff) admin керек емес: сессияларды /teacher/sessions/ бетінде
+    құрады, топтар мен студенттер — тек әкімшіге. Admin-де оқытушыға ештеңе ашық емес.
+    """
 
     def setUp(self):
         call_command("load_subjects", stdout=StringIO())
@@ -238,71 +243,25 @@ class TeacherAdminAccessTests(TestCase):
         self.teacher.profile.subjects.add(self.mathematics)
         self.client.force_login(self.teacher)
         self.math_group = StudyGroup.objects.create(name="МАТ-21", subject=self.mathematics, language="kk")
-        self.inf_group = StudyGroup.objects.create(name="ИНФ-21", subject=informatics(), language="kk")
         now = timezone.now()
-        self.inf_session = ExamSession.objects.create(
-            title="Информатика сессиясы",
-            subject=informatics(),
+        self.session = ExamSession.objects.create(
+            title="Математика сессиясы",
+            subject=self.mathematics,
             opens_at=now,
             closes_at=now + timedelta(hours=2),
         )
 
-    def session_data(self, subject, *groups):
-        today = timezone.localdate().strftime("%Y-%m-%d")
-        return {
-            "title": "Математика сессиясы",
-            "subject": subject.pk,
-            "opens_at_0": today,
-            "opens_at_1": "09:00:00",
-            "closes_at_0": today,
-            "closes_at_1": "18:00:00",
-            "groups": [group.pk for group in groups],
-            "show_answers": ExamSession.ShowAnswers.AFTER_FINISH,
-            "is_active": "on",
-            "_save": "Save",
-        }
-
-    def test_teacher_can_create_session_for_own_subject(self):
-        self.assertEqual(self.client.get(reverse("admin:quiz_examsession_add")).status_code, 200)
-        response = self.client.post(
-            reverse("admin:quiz_examsession_add"), self.session_data(self.mathematics, self.math_group)
-        )
-        self.assertEqual(response.status_code, 302)
-        session = ExamSession.objects.get(title="Математика сессиясы")
-        self.assertEqual(list(session.groups.all()), [self.math_group])
-
-    def test_teacher_cannot_create_session_for_other_subject(self):
-        response = self.client.post(
-            reverse("admin:quiz_examsession_add"), self.session_data(informatics())
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("subject", response.context["adminform"].form.errors)
-        response = self.client.post(
-            reverse("admin:quiz_examsession_add"),
-            self.session_data(self.mathematics, self.inf_group),
-        )
-        self.assertIn("groups", response.context["adminform"].form.errors)
-        self.assertFalse(ExamSession.objects.filter(title="Математика сессиясы").exists())
-
-    def test_teacher_sees_only_own_subject(self):
-        response = self.client.get(reverse("admin:quiz_examsession_changelist"))
-        self.assertNotContains(response, "Информатика сессиясы")
-        url = reverse("admin:quiz_examsession_change", args=[self.inf_session.pk])
-        # Бөтен жазба — admin оны «жоқ» деп, басты бетке қайтарады
-        self.assertEqual(self.client.get(url).status_code, 302)
-
-    def test_session_form_lists_only_own_subject_groups(self):
-        # Топтарды оқытушы басқармайды, бірақ сессия құрғанда өз пәнінің топтарын таңдайды
-        response = self.client.get(reverse("admin:quiz_examsession_add"))
-        groups = response.context["adminform"].form.fields["groups"].queryset
-        self.assertEqual(list(groups), [self.math_group])
-
-    def test_teacher_cannot_manage_groups(self):
+    def test_teacher_has_no_admin_sections(self):
         forbidden = [
+            reverse("admin:quiz_examsession_changelist"),
+            reverse("admin:quiz_examsession_add"),
+            reverse("admin:quiz_examsession_change", args=[self.session.pk]),
             reverse("admin:accounts_studygroup_changelist"),
             reverse("admin:accounts_studygroup_add"),
-            reverse("admin:accounts_studygroup_change", args=[self.math_group.pk]),
             reverse("admin:accounts_studygroup_delete", args=[self.math_group.pk]),
+            reverse("admin:auth_user_changelist"),
+            reverse("admin:auth_user_add"),
+            reverse("admin:quiz_question_changelist"),
         ]
         for url in forbidden:
             with self.subTest(url=url):
@@ -314,21 +273,16 @@ class TeacherAdminAccessTests(TestCase):
         self.assertEqual(response.status_code, 403)
         self.assertFalse(StudyGroup.objects.filter(name="МАТ-22").exists())
 
-    def test_teacher_cannot_manage_users_or_questions(self):
-        forbidden = [
-            reverse("admin:auth_user_changelist"),
-            reverse("admin:auth_user_add"),
-            reverse("admin:quiz_question_changelist"),
-        ]
-        for url in forbidden:
-            with self.subTest(url=url):
-                self.assertEqual(self.client.get(url).status_code, 403)
-
-    def test_admin_index_lists_only_sessions(self):
+    def test_admin_index_lists_nothing(self):
         response = self.client.get(reverse("admin:index"))
-        self.assertContains(response, reverse("admin:quiz_examsession_changelist"))
+        self.assertNotContains(response, reverse("admin:quiz_examsession_changelist"))
         self.assertNotContains(response, reverse("admin:accounts_studygroup_changelist"))
         self.assertNotContains(response, reverse("admin:auth_user_changelist"))
+
+    def test_navbar_has_sessions_instead_of_admin(self):
+        response = self.client.get(reverse("quiz:teacher_questions"))
+        self.assertContains(response, reverse("quiz:teacher_sessions"))
+        self.assertNotContains(response, f'href="{reverse("admin:index")}"')
 
 
 class SuperuserGroupAdminTests(TestCase):

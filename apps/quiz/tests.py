@@ -78,6 +78,7 @@ from .services import (
     is_session_open,
     remaining_seconds,
     save_answer,
+    session_status,
     split_duration,
     student_language,
     visible_sessions,
@@ -4234,3 +4235,115 @@ class QuestionImportImageTests(TeacherTestCase):
         self.assertEqual(len(errors), 1)
         self.assertIn("«Контексттер» парағы, 2-жол, «Мәтіні»", errors[0])
         self.assertFalse(Context.objects.exists())
+
+
+# ---------- Оқытушының «Сессиялар» беті (admin-сіз) ----------
+
+
+class TeacherSessionPageTests(TeacherTestCase):
+    def setUp(self):
+        super().setUp()
+        self.group = StudyGroup.objects.create(name="ИНФ-21", subject=informatics(), language="kk")
+        run_command("load_subjects", "--only", "mathematics")
+        self.mathematics = Subject.objects.get(code="mathematics")
+        self.math_group = StudyGroup.objects.create(name="МАТ-21", subject=self.mathematics, language="kk")
+
+    def session_data(self, **overrides):
+        data = {
+            "title": "Күзгі сынақ",
+            "opens_at": "2026-10-15T10:00",
+            "closes_at": "2026-10-15T14:00",
+            "groups": [self.group.pk],
+            "show_answers": ExamSession.ShowAnswers.AFTER_CLOSE,
+            "is_active": "on",
+        }
+        data.update(overrides)
+        return data
+
+    def test_create_session_for_selected_subject(self):
+        response = self.client.post(reverse("quiz:teacher_session_create"), self.session_data())
+        self.assertRedirects(response, reverse("quiz:teacher_sessions"))
+        session = ExamSession.objects.get()
+        self.assertEqual(session.subject, informatics())
+        self.assertEqual(list(session.groups.all()), [self.group])
+        self.assertEqual(session.show_answers, ExamSession.ShowAnswers.AFTER_CLOSE)
+        # Уақыт Алматы уақытымен енгізіледі
+        local_opens = timezone.localtime(session.opens_at)
+        self.assertEqual((local_opens.hour, local_opens.minute), (10, 0))
+        self.assertEqual(str(local_opens.tzinfo), "Asia/Almaty")
+
+    def test_empty_groups_means_all_groups(self):
+        self.client.post(reverse("quiz:teacher_session_create"), self.session_data(groups=[]))
+        self.assertFalse(ExamSession.objects.get().groups.exists())
+
+    def test_form_lists_only_subject_groups(self):
+        response = self.client.get(reverse("quiz:teacher_session_create"))
+        self.assertEqual(list(response.context["form"].fields["groups"].queryset), [self.group])
+        self.assertContains(response, 'type="datetime-local"')
+
+    def test_other_subject_group_is_rejected(self):
+        response = self.client.post(
+            reverse("quiz:teacher_session_create"), self.session_data(groups=[self.math_group.pk])
+        )
+        self.assertIn("groups", response.context["form"].errors)
+        self.assertFalse(ExamSession.objects.exists())
+
+    def test_closes_before_opens_is_rejected(self):
+        response = self.client.post(
+            reverse("quiz:teacher_session_create"),
+            self.session_data(closes_at="2026-10-15T09:00"),
+        )
+        self.assertIn("closes_at", response.context["form"].errors)
+        self.assertFalse(ExamSession.objects.exists())
+
+    def test_list_and_edit_own_sessions(self):
+        session = make_session(title="Информатика сессиясы")
+        session.groups.add(self.group)
+        other = make_session(title="Математика сессиясы", subject=self.mathematics)
+        response = self.client.get(reverse("quiz:teacher_sessions"))
+        self.assertContains(response, "Информатика сессиясы")
+        self.assertNotContains(response, "Математика сессиясы")
+        self.assertContains(response, "ИНФ-21")
+        self.assertContains(response, "ашық")
+        self.assertContains(response, f"{reverse('quiz:teacher_results')}?session={session.pk}")
+
+        url = reverse("quiz:teacher_session_edit", args=[session.pk])
+        response = self.client.post(url, self.session_data(title="Жаңа атау", is_active=""))
+        self.assertRedirects(response, reverse("quiz:teacher_sessions"))
+        session.refresh_from_db()
+        self.assertEqual(session.title, "Жаңа атау")
+        self.assertFalse(session.is_active)
+
+        # Басқа пәннің сессиясы — 404
+        url = reverse("quiz:teacher_session_edit", args=[other.pk])
+        self.assertEqual(self.client.get(url).status_code, 404)
+
+    def test_session_status(self):
+        now = timezone.now()
+        session = ExamSession(
+            opens_at=now + timedelta(hours=1), closes_at=now + timedelta(hours=2), is_active=True
+        )
+        self.assertEqual(session_status(session, now), "upcoming")
+        self.assertEqual(session_status(session, now + timedelta(minutes=90)), "open")
+        self.assertEqual(session_status(session, now + timedelta(hours=3)), "closed")
+        session.is_active = False
+        self.assertEqual(session_status(session, now), "inactive")
+
+    def test_only_teacher_can_open(self):
+        self.client.force_login(make_student())
+        for url in [reverse("quiz:teacher_sessions"), reverse("quiz:teacher_session_create")]:
+            with self.subTest(url=url):
+                self.assertEqual(self.client.get(url).status_code, 302)
+
+    def test_pages_in_russian(self):
+        StudyGroup.objects.filter(pk=self.group.pk).update(name="INF-21")
+        make_session(title="Test session")
+        self.client.cookies["django_language"] = "ru"
+        pages = {
+            "list": self.client.get(reverse("quiz:teacher_sessions")),
+            "new": self.client.get(reverse("quiz:teacher_session_create")),
+            "errors": self.client.post(reverse("quiz:teacher_session_create"), {}),
+        }
+        for name, response in pages.items():
+            with self.subTest(page=name):
+                self.assertNotRegex(visible_text(response), KAZAKH_ONLY_LETTERS)

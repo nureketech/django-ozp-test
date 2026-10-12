@@ -449,6 +449,52 @@ class ExamSessionAdminForm(forms.ModelForm):
         return cleaned_data
 
 
+# ---------- Сессия (оқытушының беті) ----------
+
+
+class DateTimeLocalInput(forms.DateTimeInput):
+    """Браузердің күн мен уақыт таңдағышы (<input type="datetime-local">), Asia/Almaty уақыты."""
+
+    input_type = "datetime-local"
+
+    def __init__(self, attrs=None):
+        super().__init__(attrs=attrs, format="%Y-%m-%dT%H:%M")
+
+
+class ExamSessionForm(forms.ModelForm):
+    """
+    Оқытушының сессия формасы (/teacher/sessions/): пән — оқытушының таңдалған пәні
+    (формада өріс жоқ), топтар тізімінде тек сол пәннің топтары. Жабылу уақыты
+    ашылудан кейін болуын модельдің clean() әдісі тексереді.
+    """
+
+    class Meta:
+        model = ExamSession
+        fields = ["title", "opens_at", "closes_at", "groups", "show_answers", "is_active"]
+        labels = {
+            "title": _("Атауы"),
+            "opens_at": _("Ашылу уақыты"),
+            "closes_at": _("Жабылу уақыты"),
+            "groups": _("Топтар"),
+            "show_answers": _("Дұрыс жауаптарды көрсету"),
+            "is_active": _("Белсенді"),
+        }
+        widgets = {
+            "opens_at": DateTimeLocalInput(),
+            "closes_at": DateTimeLocalInput(),
+            "groups": forms.CheckboxSelectMultiple,
+            "show_answers": forms.RadioSelect,
+        }
+
+    def __init__(self, *args, subject, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["groups"].queryset = StudyGroup.objects.filter(subject=subject)
+        self.fields["groups"].help_text = _(
+            "Ешқайсысы белгіленбесе — сессия пәннің барлық тобына арналады."
+        )
+        add_bootstrap_classes(self)
+
+
 # ---------- Тест тапсыру (студент) ----------
 
 

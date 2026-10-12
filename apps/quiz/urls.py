@@ -68,6 +68,17 @@ urlpatterns = [
         teacher_views.context_edit,
         name="teacher_context_edit",
     ),
+    path("teacher/sessions/", teacher_views.session_list, name="teacher_sessions"),
+    path(
+        "teacher/sessions/new/",
+        teacher_views.session_create,
+        name="teacher_session_create",
+    ),
+    path(
+        "teacher/sessions/<int:pk>/edit/",
+        teacher_views.session_edit,
+        name="teacher_session_edit",
+    ),
     path("teacher/bank/", teacher_views.bank, name="teacher_bank"),
     path("teacher/bank/sample/", teacher_views.bank_sample, name="teacher_bank_sample"),
     path("teacher/results/", teacher_views.results, name="teacher_results"),

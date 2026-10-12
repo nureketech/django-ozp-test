@@ -1,8 +1,6 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 
-from apps.accounts.models import StudyGroup
-
 from .constants import ANSWERS_PER_QUESTION
 from .forms import AnswerInlineFormSet, ExamSessionAdminForm
 from .models import (
@@ -16,49 +14,6 @@ from .models import (
     Subtopic,
     Topic,
 )
-from .services import teacher_subjects
-
-
-class TeacherSubjectAdminMixin:
-    """
-    Сессиялар admin-і әр оқытушыға (is_staff) ашық — рұқсаттарды бөлек
-    тағайындау керек емес (топтар мен студенттер — тек әкімшіге). Оқытушы тек өз пәндерінің жазбаларын көреді
-    және жаңасын тек өз пәніне жасайды; әкімші (is_superuser) — барлығын.
-    Өшіру — Django-ның әдепкі рұқсаты бойынша (яғни тек әкімші).
-    """
-
-    def is_teacher(self, request):
-        return request.user.is_active and request.user.is_staff
-
-    def has_module_permission(self, request):
-        return self.is_teacher(request)
-
-    def has_view_permission(self, request, obj=None):
-        return self.is_teacher(request)
-
-    def has_add_permission(self, request):
-        return self.is_teacher(request)
-
-    def has_change_permission(self, request, obj=None):
-        return self.is_teacher(request)
-
-    def get_queryset(self, request):
-        queryset = super().get_queryset(request)
-        if request.user.is_superuser:
-            return queryset
-        return queryset.filter(subject__in=teacher_subjects(request.user))
-
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == "subject" and not request.user.is_superuser:
-            kwargs["queryset"] = teacher_subjects(request.user)
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
-
-    def formfield_for_manytomany(self, db_field, request, **kwargs):
-        if db_field.name == "groups" and not request.user.is_superuser:
-            kwargs["queryset"] = StudyGroup.objects.filter(
-                subject__in=teacher_subjects(request.user)
-            )
-        return super().formfield_for_manytomany(db_field, request, **kwargs)
 
 
 # Пәндер мен тақырыптар `load_subjects` арқылы жүктеледі (subjects.json).
@@ -176,7 +131,9 @@ class ContextAdmin(admin.ModelAdmin):
 
 
 @admin.register(ExamSession)
-class ExamSessionAdmin(TeacherSubjectAdminMixin, admin.ModelAdmin):
+class ExamSessionAdmin(admin.ModelAdmin):
+    """Admin-дегі сессиялар — тек әкімшіге; оқытушы сессияларды /teacher/sessions/ бетінде құрады."""
+
     form = ExamSessionAdminForm
     list_display = ["title", "subject", "opens_at", "closes_at", "show_answers", "is_active"]
     list_filter = ["subject", "is_active", "groups"]

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Тест сессиялары" %}{% endblock %}
+
+{% block content %}
+
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+    <h1 class="h4 mb-0 me-auto">{% translate "Тест сессиялары" %} <span class="text-muted fs-6">({{ rows|length }})</span></h1>
+    <a class="btn btn-primary" href="{% url 'quiz:teacher_session_create' %}">{% translate "Жаңа сессия" %}</a>
+</div>
+
+<div class="table-responsive bg-white rounded shadow-sm">
+    <table class="table table-hover align-middle mb-0">
+        <thead>
+            <tr>
+                <th>{% translate "Атауы" %}</th>
+                <th>{% translate "Уақыты" %}</th>
+                <th>{% translate "Топтар" %}</th>
+                <th>{% translate "Күйі" %}</th>
+                <th class="text-end">{% translate "Тапсырғандар" %}</th>
+                <th class="text-end">{% translate "Әрекеттер" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+                {% with session=row.session %}
+                    <tr{% if row.status == "inactive" %} class="text-muted"{% endif %}>
+                        <td>{{ session.title }}</td>
+                        <td class="text-nowrap small">{{ session.opens_at|date:"d.m.Y H:i" }} — {{ session.closes_at|date:"d.m.Y H:i" }}</td>
+                        <td class="small">
+                            {% for group in session.groups.all %}{{ group.name }}{% if not forloop.last %}, {% endif %}{% empty %}{% translate "Барлық топ" %}{% endfor %}
+                        </td>
+                        <td>
+                            {% if row.status == "open" %}<span class="badge text-bg-success">{% translate "ашық" %}</span>
+                            {% elif row.status == "upcoming" %}<span class="badge text-bg-primary">{% translate "алдағы" %}</span>
+                            {% elif row.status == "closed" %}<span class="badge text-bg-secondary">{% translate "жабылды" %}</span>
+                            {% else %}<span class="badge text-bg-light border">{% translate "белсенді емес" %}</span>{% endif %}
+                        </td>
+                        <td class="text-end">{{ session.attempts_count }}</td>
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-sm btn-outline-primary" href="{% url 'quiz:teacher_session_edit' session.pk %}">{% translate "Өңдеу" %}</a>
+                            <a class="btn btn-sm btn-outline-secondary" href="{% url 'quiz:teacher_results' %}?session={{ session.pk }}">{% translate "Нәтижелер" %}</a>
+                        </td>
+                    </tr>
+                {% endwith %}
+            {% empty %}
+                <tr><td colspan="6" class="text-center text-muted py-4">{% translate "Сессиялар әлі жоқ." %}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}
