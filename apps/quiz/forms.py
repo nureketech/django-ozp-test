@@ -398,6 +398,7 @@ class ContextForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields["image"].widget.attrs["accept"] = IMAGE_ACCEPT
         add_bootstrap_classes(self)
 
     def clean_language(self):

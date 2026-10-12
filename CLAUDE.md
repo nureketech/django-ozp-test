@@ -33,6 +33,7 @@
 - Студент жағы — тек тобының пәні (`services.student_subject`): сессиялар (`visible_sessions`: пәні бірдей және топтары бос не тобы ішінде; тобы жоқ — ештеңе), жаттығу тақырыптары, нәтижедегі тақырыптар талдауы.
 - **Формулалар (KaTeX, CDN):** тек `subject.uses_formulas` пәнінде және тек сұрақ беттерінде — view `uses_formulas` береді, `base.html` `quiz/_katex.html`-ды қосады; `static/js/formulas.js` `\( \)` / `\[ \]` өңдейді (`pre.code-block`, `code`, форма өрістері — жоқ). Мәтін өзгеріссіз сақталады, `|safe` жоқ.
 - **Жауап нұсқасы:** мәтін және/немесе сурет (`Answer.image`, файл аты uuid); екеуі де бос — қате (`forms.answer_has_content`). Сурет — jpg/png/webp, 2 МБ (`constants.MAX_IMAGE_MB`, `models.IMAGE_VALIDATORS`). Жауапты шаблонда `quiz/_answer_content.html` көрсетеді.
+- **Суреттер** (сұрақ, контекст, жауап) кездейсоқ атпен сақталады (`models.random_image_name`: `questions/<uuid>.png` т.б.) — `/media/` қорғалмаған, атын болжауға болмайды; үшеуіне де `IMAGE_VALIDATORS`. CDN файлдарында (Bootstrap, KaTeX) `integrity` (SRI) бар: нұсқасын өзгертсең — хэшті де жаңарт.
 - **Жаңа пән кодты өзгертпей қосылады:** `subjects.json`-ға жазылып, `load_subjects` іске қосылады. Пәнге тән мән кодта жазылмайды (тек бұрынғы деректер үшін `constants.INFORMATICS_CODE`).
 
 ## Код жазу ережелері

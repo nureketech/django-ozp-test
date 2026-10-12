@@ -75,16 +75,29 @@ def validate_image_size(image):
         )
 
 
-# Сұрақ пен жауап суреттерінің тексерулері: jpg / png / webp, 2 МБ-қа дейін
+# Сұрақ, контекст және жауап суреттерінің тексерулері: jpg / png / webp, 2 МБ-қа дейін
 IMAGE_VALIDATORS = [FileExtensionValidator(IMAGE_EXTENSIONS), validate_image_size]
 
 
+def random_image_name(folder, filename):
+    """
+    Сурет кездейсоқ атпен сақталады (folder/<uuid>.png): /media/ қорғалмаған,
+    сондықтан «q1.png» сияқты атты тест басталмай тұрып табуға болмасын,
+    ал жауап суретінің атынан дұрыс жауапты болжау мүмкін болмасын.
+    """
+    return f"{folder}/{uuid.uuid4().hex}{Path(filename).suffix.lower()}"
+
+
+def question_image_path(instance, filename):
+    return random_image_name("questions", filename)
+
+
+def context_image_path(instance, filename):
+    return random_image_name("contexts", filename)
+
+
 def answer_image_path(instance, filename):
-    """
-    Жауап суреті кездейсоқ атпен сақталады (answers/<uuid>.png): файл атынан
-    дұрыс жауапты болжау мүмкін болмасын.
-    """
-    return f"answers/{uuid.uuid4().hex}{Path(filename).suffix.lower()}"
+    return random_image_name("answers", filename)
 
 
 def localized_name(name_kk, name_ru):
@@ -202,7 +215,9 @@ class Context(models.Model):
     text = models.TextField(_("мәтіні"))
     # Бағдарлама коды: мәтін өзгертілмей сақталады, <pre> ішінде көрсетіледі
     code = models.TextField(_("коды"), blank=True)
-    image = models.ImageField(_("суреті"), upload_to="contexts/", blank=True)
+    image = models.ImageField(
+        _("суреті"), upload_to=context_image_path, blank=True, validators=IMAGE_VALIDATORS
+    )
     is_demo = models.BooleanField(_("демо"), default=False)
     is_active = models.BooleanField(_("белсенді"), default=True)
 
@@ -239,7 +254,7 @@ class Question(models.Model):
     language = models.CharField(_("тілі"), max_length=2, choices=Language.choices)
     text = models.TextField(_("сұрақ мәтіні"))
     image = models.ImageField(
-        _("суреті"), upload_to="questions/", blank=True, validators=IMAGE_VALIDATORS
+        _("суреті"), upload_to=question_image_path, blank=True, validators=IMAGE_VALIDATORS
     )
     # Бағдарлама коды: шегіністер сақталады, <pre> ішінде көрсетіледі
     code = models.TextField(_("коды"), blank=True)

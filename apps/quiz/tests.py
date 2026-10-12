@@ -19,6 +19,7 @@ from django.core.management.base import CommandError
 from django.db import IntegrityError, connection
 from django.db.migrations.executor import MigrationExecutor
 from django.forms import inlineformset_factory
+from django.template.loader import render_to_string
 from django.test import TestCase, TransactionTestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -3252,6 +3253,52 @@ def png_file(name="answer.png", big=False):
     else:
         Image.new("RGB", (40, 30), "red").save(buffer, format="PNG")
     return SimpleUploadedFile(name, buffer.getvalue(), content_type="image/png")
+
+
+@override_settings(MEDIA_ROOT=TEST_MEDIA_ROOT)
+class RandomImageNameTests(TeacherTestCase):
+    """Сұрақ пен контекст суреттері кездейсоқ атпен сақталады; контекст суретіне де 2 МБ шегі."""
+
+    def context_data(self, **overrides):
+        data = {"title": "Кесте", "language": "kk", "text": "Мәтін", "code": "", "is_active": "on"}
+        data.update(overrides)
+        return data
+
+    def test_question_image_gets_random_name(self):
+        data = self.question_data(image=png_file("q1.png"))
+        self.client.post(reverse("quiz:teacher_question_create"), data)
+        name = Question.objects.get().image.name
+        self.assertRegex(name, r"^questions/[0-9a-f]{32}\.png$")
+
+    def test_context_image_gets_random_name(self):
+        self.client.post(
+            reverse("quiz:teacher_context_create"), self.context_data(image=png_file("k1.png"))
+        )
+        self.assertRegex(Context.objects.get().image.name, r"^contexts/[0-9a-f]{32}\.png$")
+
+    def test_context_image_size_is_limited(self):
+        response = self.client.post(
+            reverse("quiz:teacher_context_create"), self.context_data(image=png_file(big=True))
+        )
+        self.assertIn("image", response.context["form"].errors)
+        self.assertFalse(Context.objects.exists())
+
+    def test_context_form_accepts_only_allowed_formats(self):
+        response = self.client.get(reverse("quiz:teacher_context_create"))
+        self.assertContains(response, 'accept="image/jpeg,image/png,image/webp"')
+
+
+class CdnIntegrityTests(TestCase):
+    def test_cdn_files_have_integrity(self):
+        # Bootstrap — әр бетте, KaTeX — тек формуласы бар пәннің сұрақ беттерінде
+        html = self.client.get(reverse("quiz:home")).content.decode()
+        html += render_to_string("quiz/_katex.html")
+        tags = re.findall(r"<(?:link|script)[^>]*cdn\.jsdelivr\.net[^>]*>", html)
+        self.assertEqual(len(tags), 5)
+        for tag in tags:
+            with self.subTest(tag=tag):
+                self.assertIn('integrity="sha384-', tag)
+                self.assertIn('crossorigin="anonymous"', tag)
 
 
 @override_settings(MEDIA_ROOT=TEST_MEDIA_ROOT)
