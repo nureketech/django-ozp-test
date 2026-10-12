@@ -10,7 +10,12 @@ from apps.quiz.admin import TeacherSubjectAdminMixin
 from .forms import ProfileInlineFormSet
 from .models import Profile, StudyGroup
 from .student_import import codes_workbook, regenerate_codes
-from .views import import_students_template_view, import_students_view, xlsx_response
+from .views import (
+    add_student_view,
+    import_students_template_view,
+    import_students_view,
+    xlsx_response,
+)
 
 
 def codes_file_response(request, rows):
@@ -45,6 +50,11 @@ class StudyGroupAdmin(TeacherSubjectAdminMixin, admin.ModelAdmin):
                 "import-students/",
                 self.admin_site.admin_view(import_students_view),
                 name="accounts_studygroup_import",
+            ),
+            path(
+                "add-student/",
+                self.admin_site.admin_view(add_student_view),
+                name="accounts_studygroup_add_student",
             ),
             path(
                 "import-students/template/",

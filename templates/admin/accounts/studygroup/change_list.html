@@ -1,9 +1,10 @@
 {% extends "admin/change_list.html" %}
 {% load i18n %}
 
-{# Топтар тізімінің үстінде: «Студенттерді импорттау» (тек әкімшіге) #}
+{# Топтар тізімінің үстінде: «Студент қосу» және «Студенттерді импорттау» (тек әкімшіге) #}
 {% block object-tools-items %}
     {% if request.user.is_superuser %}
+        <li><a href="{% url 'admin:accounts_studygroup_add_student' %}">{% translate "Студент қосу" %}</a></li>
         <li><a href="{% url 'admin:accounts_studygroup_import' %}">{% translate "Студенттерді импорттау" %}</a></li>
     {% endif %}
     {{ block.super }}

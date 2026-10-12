@@ -7,14 +7,22 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 
 from apps.quiz.forms import ExcelImportForm
 from apps.quiz.question_import import XLSX_CONTENT_TYPE
 from apps.quiz.services import active_attempt, first_unanswered_number
 
+from .forms import StudentAddForm
 from .models import StudyGroup
-from .student_import import codes_workbook, import_students, import_template, result_message
+from .student_import import (
+    codes_workbook,
+    create_student,
+    import_students,
+    import_template,
+    result_message,
+)
 
 
 @login_required
@@ -82,6 +90,32 @@ def import_students_view(request):
         "result": result,
     }
     return render(request, "admin/accounts/import_students.html", context)
+
+
+@never_cache
+def add_student_view(request):
+    """
+    Admin-дегі «Студент қосу» беті (тек әкімші): бір студентті қолмен қосу.
+    Сәтті болса, сол бетте студенттің коды бір рет көрсетіледі (дерекқорда хэші
+    ғана, сондықтан кейін көрсету мүмкін емес) — бет кэштелмейді.
+    """
+    require_superuser(request)
+    form = StudentAddForm(request.POST or None)
+    created = None
+    if request.method == "POST" and form.is_valid():
+        data = form.cleaned_data
+        user, code = create_student(data["full_name"], data["group"], data["iin"])
+        created = {"user": user, "name": data["full_name"], "group": data["group"], "code": code}
+        form = StudentAddForm()
+
+    context = {
+        **admin.site.each_context(request),
+        "title": _("Студент қосу"),
+        "opts": StudyGroup._meta,
+        "form": form,
+        "created": created,
+    }
+    return render(request, "admin/accounts/add_student.html", context)
 
 
 def import_students_template_view(request):

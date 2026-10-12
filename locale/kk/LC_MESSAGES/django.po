@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 11:36+0500\n"
+"POT-Creation-Date: 2026-10-12 15:11+0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,45 +17,47 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 
-#: .\apps\accounts\admin.py:19
+#: .\apps\accounts\admin.py:24
 msgid "Таңдалғандардың арасында студент жоқ."
 msgstr ""
 
-#: .\apps\accounts\admin.py:21
+#: .\apps\accounts\admin.py:26
 #, python-format
 msgid "%(count)s студентке жаңа код жасалды."
 msgstr ""
 
-#: .\apps\accounts\admin.py:60
+#: .\apps\accounts\admin.py:70
 msgid "студенттер"
 msgstr ""
 
-#: .\apps\accounts\admin.py:67
+#: .\apps\accounts\admin.py:77
 msgid "Топ студенттеріне жаңа код жасау"
 msgstr ""
 
-#: .\apps\accounts\admin.py:96 .\apps\accounts\student_import.py:40
+#: .\apps\accounts\admin.py:106 .\apps\accounts\forms.py:50
+#: .\apps\accounts\student_import.py:40
+#: .\templates\admin\accounts\add_student.html:21
 msgid "Аты-жөні"
 msgstr ""
 
-#: .\apps\accounts\admin.py:98
+#: .\apps\accounts\admin.py:108
 msgid "Оқытушы"
 msgstr ""
 
-#: .\apps\accounts\admin.py:102
+#: .\apps\accounts\admin.py:112
 msgid "Оқытушы болса белгілеңіз және төмендегі профильде пәндерін таңдаңыз."
 msgstr ""
 
-#: .\apps\accounts\admin.py:114
+#: .\apps\accounts\admin.py:124
 msgid "Студенттерге жаңа код жасау"
 msgstr ""
 
-#: .\apps\accounts\admin.py:125
+#: .\apps\accounts\admin.py:135
 #, python-format
 msgid "%(user)s — оқытушы, бірақ оған пән тағайындалмаған."
 msgstr ""
 
-#: .\apps\accounts\admin.py:128 .\apps\accounts\models.py:31
+#: .\apps\accounts\admin.py:138 .\apps\accounts\models.py:31
 #: .\apps\accounts\models.py:53
 msgid "топ"
 msgstr ""
@@ -64,20 +66,52 @@ msgstr ""
 msgid "Қолданушылар мен топтар"
 msgstr ""
 
-#: .\apps\accounts\forms.py:17
+#: .\apps\accounts\forms.py:20
 msgid "ИИН (логин) немесе код (құпия сөз) қате."
 msgstr ""
 
-#: .\apps\accounts\forms.py:18
+#: .\apps\accounts\forms.py:21
 msgid "Бұл тіркелгі бұғатталған."
 msgstr ""
 
-#: .\apps\accounts\forms.py:23
+#: .\apps\accounts\forms.py:26
 msgid "ИИН немесе логин"
 msgstr ""
 
-#: .\apps\accounts\forms.py:24
+#: .\apps\accounts\forms.py:27
 msgid "Код немесе құпия сөз"
+msgstr ""
+
+#: .\apps\accounts\forms.py:52
+msgid "Тегі, аты, әкесінің аты: бірінші сөз — тегі, қалғаны — аты."
+msgstr ""
+
+#: .\apps\accounts\forms.py:55 .\apps\accounts\student_import.py:40
+#: .\apps\accounts\student_import.py:270 .\apps\quiz\forms.py:497
+#: .\apps\quiz\services.py:899 .\templates\admin\accounts\add_student.html:22
+#: .\templates\teacher\results.html:33
+msgid "Топ"
+msgstr ""
+
+#: .\apps\accounts\forms.py:58 .\apps\accounts\student_import.py:40
+#: .\templates\admin\accounts\add_student.html:23
+msgid "ИИН"
+msgstr ""
+
+#: .\apps\accounts\forms.py:68 .\apps\accounts\student_import.py:132
+msgid "тым ұзын."
+msgstr ""
+
+#: .\apps\accounts\forms.py:74 .\apps\accounts\student_import.py:140
+msgid "12 цифрдан тұрып, бақылау цифры дұрыс болуы керек."
+msgstr ""
+
+#: .\apps\accounts\forms.py:77 .\apps\accounts\student_import.py:153
+msgid "бұл — қызметкердің логині, оны өзгертуге болмайды."
+msgstr ""
+
+#: .\apps\accounts\forms.py:80
+msgid "Бұл ИИН-мен студент бұрыннан бар."
 msgstr ""
 
 #: .\apps\accounts\models.py:8 .\apps\quiz\models.py:20
@@ -129,16 +163,6 @@ msgstr ""
 msgid "профильдер"
 msgstr ""
 
-#: .\apps\accounts\student_import.py:40 .\apps\accounts\student_import.py:258
-#: .\apps\quiz\forms.py:497 .\apps\quiz\services.py:899
-#: .\templates\teacher\results.html:33
-msgid "Топ"
-msgstr ""
-
-#: .\apps\accounts\student_import.py:40
-msgid "ИИН"
-msgstr ""
-
 #: .\apps\accounts\student_import.py:99 .\apps\quiz\question_import.py:265
 msgid "Файл оқылмады: ол Excel (.xlsx) файлы болуы керек."
 msgstr ""
@@ -159,17 +183,9 @@ msgstr ""
 msgid "бос болмауы керек."
 msgstr ""
 
-#: .\apps\accounts\student_import.py:132
-msgid "тым ұзын."
-msgstr ""
-
 #: .\apps\accounts\student_import.py:137
 #, python-format
 msgid "«%(group)s» тобы жоқ: алдымен оны admin-де құрыңыз."
-msgstr ""
-
-#: .\apps\accounts\student_import.py:140
-msgid "12 цифрдан тұрып, бақылау цифры дұрыс болуы керек."
 msgstr ""
 
 #: .\apps\accounts\student_import.py:142
@@ -177,50 +193,47 @@ msgstr ""
 msgid "бұл ИИН %(row)s-жолда бар."
 msgstr ""
 
-#: .\apps\accounts\student_import.py:153
-msgid "бұл — қызметкердің логині, оны өзгертуге болмайды."
-msgstr ""
-
 #: .\apps\accounts\student_import.py:156
 msgid "Файлда студент жоқ."
 msgstr ""
 
-#: .\apps\accounts\student_import.py:191
+#: .\apps\accounts\student_import.py:203
 #, python-format
 msgid ""
 "Студенттер импортталды: жаңасы — %(created)s, жаңартылғаны — %(updated)s. "
 "Жаңа кодтар жүктелген файлда."
 msgstr ""
 
-#: .\apps\accounts\student_import.py:225
+#: .\apps\accounts\student_import.py:237
 msgid "Кодтар"
 msgstr ""
 
-#: .\apps\accounts\student_import.py:226 .\apps\quiz\forms.py:195
+#: .\apps\accounts\student_import.py:238 .\apps\quiz\forms.py:195
 #: .\apps\quiz\forms.py:388 .\apps\quiz\question_import.py:88
 #: .\apps\quiz\question_import.py:97
+#: .\templates\admin\accounts\add_student.html:24
 msgid "Код"
 msgstr ""
 
-#: .\apps\accounts\student_import.py:230
+#: .\apps\accounts\student_import.py:242
 msgid "бұрынғы код"
 msgstr ""
 
-#: .\apps\accounts\student_import.py:247
+#: .\apps\accounts\student_import.py:259
 msgid "Студенттер"
 msgstr ""
 
-#: .\apps\accounts\student_import.py:257
+#: .\apps\accounts\student_import.py:269
 msgid "Топтар"
 msgstr ""
 
-#: .\apps\accounts\student_import.py:258 .\apps\quiz\services.py:900
+#: .\apps\accounts\student_import.py:270 .\apps\quiz\services.py:900
 #: .\templates\teacher\_subject_switcher.html:6
 #: .\templates\teacher\_subject_switcher.html:18
 msgid "Пән"
 msgstr ""
 
-#: .\apps\accounts\student_import.py:258
+#: .\apps\accounts\student_import.py:270
 msgid "Оқыту тілі"
 msgstr ""
 
@@ -258,14 +271,19 @@ msgstr ""
 msgid "Тек сандардан тұрмауы керек."
 msgstr ""
 
-#: .\apps\accounts\views.py:37
+#: .\apps\accounts\views.py:45
 msgid ""
 "Тест аяқталмай тұрып аккаунттан шығуға болмайды. Алдымен тестті аяқтаңыз."
 msgstr ""
 
-#: .\apps\accounts\views.py:79
-#: .\templates\admin\accounts\studygroup\change_list.html:7
+#: .\apps\accounts\views.py:87
+#: .\templates\admin\accounts\studygroup\change_list.html:8
 msgid "Студенттерді импорттау"
+msgstr ""
+
+#: .\apps\accounts\views.py:113
+#: .\templates\admin\accounts\studygroup\change_list.html:7
+msgid "Студент қосу"
 msgstr ""
 
 #: .\apps\quiz\admin.py:151 .\apps\quiz\models.py:202 .\apps\quiz\models.py:287
@@ -984,8 +1002,40 @@ msgid ""
 "хабарласыңыз."
 msgstr ""
 
+#: .\templates\admin\accounts\add_student.html:6
 #: .\templates\admin\accounts\import_students.html:6
 msgid "Басты бет"
+msgstr ""
+
+#: .\templates\admin\accounts\add_student.html:18
+msgid "Студент қосылды."
+msgstr ""
+
+#: .\templates\admin\accounts\add_student.html:27
+msgid ""
+"Кодты қазір жазып алыңыз немесе студентке беріңіз: бетті жапқан соң ол қайта "
+"көрсетілмейді. Код жоғалса — «Жаңа код жасау» әрекеті."
+msgstr ""
+
+#: .\templates\admin\accounts\add_student.html:29
+msgid "Тағы студент қосу"
+msgstr ""
+
+#: .\templates\admin\accounts\add_student.html:35
+msgid "Төмендегі қателерді түзетіңіз."
+msgstr ""
+
+#: .\templates\admin\accounts\add_student.html:45
+#, python-format
+msgid "Студенттің бетін ашу: %(name)s"
+msgstr ""
+
+#: .\templates\admin\accounts\add_student.html:53
+msgid "Қосу"
+msgstr ""
+
+#: .\templates\admin\accounts\add_student.html:54
+msgid "Топтар тізіміне"
 msgstr ""
 
 #: .\templates\admin\accounts\import_students.html:17

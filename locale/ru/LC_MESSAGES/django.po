@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 11:36+0500\n"
+"POT-Creation-Date: 2026-10-12 15:11+0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,46 +19,48 @@ msgstr ""
 "n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || "
 "(n%100>=11 && n%100<=14)? 2 : 3);\n"
 
-#: .\apps\accounts\admin.py:19
+#: .\apps\accounts\admin.py:24
 msgid "Таңдалғандардың арасында студент жоқ."
 msgstr "Среди выбранных нет студентов."
 
-#: .\apps\accounts\admin.py:21
+#: .\apps\accounts\admin.py:26
 #, python-format
 msgid "%(count)s студентке жаңа код жасалды."
 msgstr "Новый код создан для студентов: %(count)s."
 
-#: .\apps\accounts\admin.py:60
+#: .\apps\accounts\admin.py:70
 msgid "студенттер"
 msgstr "студенты"
 
-#: .\apps\accounts\admin.py:67
+#: .\apps\accounts\admin.py:77
 msgid "Топ студенттеріне жаңа код жасау"
 msgstr "Создать новые коды студентам группы"
 
-#: .\apps\accounts\admin.py:96 .\apps\accounts\student_import.py:40
+#: .\apps\accounts\admin.py:106 .\apps\accounts\forms.py:50
+#: .\apps\accounts\student_import.py:40
+#: .\templates\admin\accounts\add_student.html:21
 msgid "Аты-жөні"
 msgstr "Имя и фамилия"
 
-#: .\apps\accounts\admin.py:98
+#: .\apps\accounts\admin.py:108
 msgid "Оқытушы"
 msgstr "Преподаватель"
 
-#: .\apps\accounts\admin.py:102
+#: .\apps\accounts\admin.py:112
 msgid "Оқытушы болса белгілеңіз және төмендегі профильде пәндерін таңдаңыз."
 msgstr ""
 "Отметьте, если это преподаватель, и выберите его предметы в профиле ниже."
 
-#: .\apps\accounts\admin.py:114
+#: .\apps\accounts\admin.py:124
 msgid "Студенттерге жаңа код жасау"
 msgstr "Создать студентам новые коды"
 
-#: .\apps\accounts\admin.py:125
+#: .\apps\accounts\admin.py:135
 #, python-format
 msgid "%(user)s — оқытушы, бірақ оған пән тағайындалмаған."
 msgstr "%(user)s — преподаватель, но ему не назначен предмет."
 
-#: .\apps\accounts\admin.py:128 .\apps\accounts\models.py:31
+#: .\apps\accounts\admin.py:138 .\apps\accounts\models.py:31
 #: .\apps\accounts\models.py:53
 msgid "топ"
 msgstr "группа"
@@ -67,21 +69,53 @@ msgstr "группа"
 msgid "Қолданушылар мен топтар"
 msgstr "Пользователи и группы"
 
-#: .\apps\accounts\forms.py:17
+#: .\apps\accounts\forms.py:20
 msgid "ИИН (логин) немесе код (құпия сөз) қате."
 msgstr "Неверный ИИН (логин) или код (пароль)."
 
-#: .\apps\accounts\forms.py:18
+#: .\apps\accounts\forms.py:21
 msgid "Бұл тіркелгі бұғатталған."
 msgstr "Эта учётная запись заблокирована."
 
-#: .\apps\accounts\forms.py:23
+#: .\apps\accounts\forms.py:26
 msgid "ИИН немесе логин"
 msgstr "ИИН или логин"
 
-#: .\apps\accounts\forms.py:24
+#: .\apps\accounts\forms.py:27
 msgid "Код немесе құпия сөз"
 msgstr "Код или пароль"
+
+#: .\apps\accounts\forms.py:52
+msgid "Тегі, аты, әкесінің аты: бірінші сөз — тегі, қалғаны — аты."
+msgstr "Фамилия, имя, отчество: первое слово — фамилия, остальное — имя."
+
+#: .\apps\accounts\forms.py:55 .\apps\accounts\student_import.py:40
+#: .\apps\accounts\student_import.py:270 .\apps\quiz\forms.py:497
+#: .\apps\quiz\services.py:899 .\templates\admin\accounts\add_student.html:22
+#: .\templates\teacher\results.html:33
+msgid "Топ"
+msgstr "Группа"
+
+#: .\apps\accounts\forms.py:58 .\apps\accounts\student_import.py:40
+#: .\templates\admin\accounts\add_student.html:23
+msgid "ИИН"
+msgstr "ИИН"
+
+#: .\apps\accounts\forms.py:68 .\apps\accounts\student_import.py:132
+msgid "тым ұзын."
+msgstr "слишком длинное."
+
+#: .\apps\accounts\forms.py:74 .\apps\accounts\student_import.py:140
+msgid "12 цифрдан тұрып, бақылау цифры дұрыс болуы керек."
+msgstr "должен состоять из 12 цифр с правильной контрольной цифрой."
+
+#: .\apps\accounts\forms.py:77 .\apps\accounts\student_import.py:153
+msgid "бұл — қызметкердің логині, оны өзгертуге болмайды."
+msgstr "это логин сотрудника, его нельзя изменить."
+
+#: .\apps\accounts\forms.py:80
+msgid "Бұл ИИН-мен студент бұрыннан бар."
+msgstr "Студент с этим ИИН уже есть."
 
 #: .\apps\accounts\models.py:8 .\apps\quiz\models.py:20
 #: .\config\settings.py:138
@@ -132,16 +166,6 @@ msgstr "профиль"
 msgid "профильдер"
 msgstr "профили"
 
-#: .\apps\accounts\student_import.py:40 .\apps\accounts\student_import.py:258
-#: .\apps\quiz\forms.py:497 .\apps\quiz\services.py:899
-#: .\templates\teacher\results.html:33
-msgid "Топ"
-msgstr "Группа"
-
-#: .\apps\accounts\student_import.py:40
-msgid "ИИН"
-msgstr "ИИН"
-
 #: .\apps\accounts\student_import.py:99 .\apps\quiz\question_import.py:265
 msgid "Файл оқылмады: ол Excel (.xlsx) файлы болуы керек."
 msgstr "Не удалось прочитать файл: это должен быть файл Excel (.xlsx)."
@@ -162,70 +186,57 @@ msgstr "строка %(row)s, «%(column)s»: %(message)s"
 msgid "бос болмауы керек."
 msgstr "не должно быть пустым."
 
-#: .\apps\accounts\student_import.py:132
-msgid "тым ұзын."
-msgstr "слишком длинное."
-
 #: .\apps\accounts\student_import.py:137
 #, python-format
 msgid "«%(group)s» тобы жоқ: алдымен оны admin-де құрыңыз."
 msgstr "группы «%(group)s» нет: сначала создайте её в admin."
-
-#: .\apps\accounts\student_import.py:140
-msgid "12 цифрдан тұрып, бақылау цифры дұрыс болуы керек."
-msgstr "должен состоять из 12 цифр с правильной контрольной цифрой."
 
 #: .\apps\accounts\student_import.py:142
 #, python-format
 msgid "бұл ИИН %(row)s-жолда бар."
 msgstr "этот ИИН уже есть в строке %(row)s."
 
-#: .\apps\accounts\student_import.py:153
-msgid "бұл — қызметкердің логині, оны өзгертуге болмайды."
-msgstr "это логин сотрудника, его нельзя изменить."
-
 #: .\apps\accounts\student_import.py:156
 msgid "Файлда студент жоқ."
 msgstr "В файле нет студентов."
 
-#: .\apps\accounts\student_import.py:191
+#: .\apps\accounts\student_import.py:203
 #, python-format
 msgid ""
 "Студенттер импортталды: жаңасы — %(created)s, жаңартылғаны — %(updated)s. "
 "Жаңа кодтар жүктелген файлда."
-msgstr ""
-"Студенты импортированы: новых — %(created)s, обновлено — %(updated)s. Новые "
-"коды — в скачанном файле."
+msgstr "Студенты импортированы: новых — %(created)s, обновлено — %(updated)s. Новые коды — в скачанном файле."
 
-#: .\apps\accounts\student_import.py:225
+#: .\apps\accounts\student_import.py:237
 msgid "Кодтар"
 msgstr "Коды"
 
-#: .\apps\accounts\student_import.py:226 .\apps\quiz\forms.py:195
+#: .\apps\accounts\student_import.py:238 .\apps\quiz\forms.py:195
 #: .\apps\quiz\forms.py:388 .\apps\quiz\question_import.py:88
 #: .\apps\quiz\question_import.py:97
+#: .\templates\admin\accounts\add_student.html:24
 msgid "Код"
 msgstr "Код"
 
-#: .\apps\accounts\student_import.py:230
+#: .\apps\accounts\student_import.py:242
 msgid "бұрынғы код"
 msgstr "прежний код"
 
-#: .\apps\accounts\student_import.py:247
+#: .\apps\accounts\student_import.py:259
 msgid "Студенттер"
 msgstr "Студенты"
 
-#: .\apps\accounts\student_import.py:257
+#: .\apps\accounts\student_import.py:269
 msgid "Топтар"
 msgstr "Группы"
 
-#: .\apps\accounts\student_import.py:258 .\apps\quiz\services.py:900
+#: .\apps\accounts\student_import.py:270 .\apps\quiz\services.py:900
 #: .\templates\teacher\_subject_switcher.html:6
 #: .\templates\teacher\_subject_switcher.html:18
 msgid "Пән"
 msgstr "Предмет"
 
-#: .\apps\accounts\student_import.py:258
+#: .\apps\accounts\student_import.py:270
 msgid "Оқыту тілі"
 msgstr "Язык обучения"
 
@@ -263,16 +274,21 @@ msgstr "Пароль не может состоять только из цифр
 msgid "Тек сандардан тұрмауы керек."
 msgstr "Не может состоять только из цифр."
 
-#: .\apps\accounts\views.py:37
+#: .\apps\accounts\views.py:45
 msgid ""
 "Тест аяқталмай тұрып аккаунттан шығуға болмайды. Алдымен тестті аяқтаңыз."
 msgstr ""
 "Нельзя выйти из аккаунта, пока тест не завершён. Сначала завершите тест."
 
-#: .\apps\accounts\views.py:79
-#: .\templates\admin\accounts\studygroup\change_list.html:7
+#: .\apps\accounts\views.py:87
+#: .\templates\admin\accounts\studygroup\change_list.html:8
 msgid "Студенттерді импорттау"
 msgstr "Импорт студентов"
+
+#: .\apps\accounts\views.py:113
+#: .\templates\admin\accounts\studygroup\change_list.html:7
+msgid "Студент қосу"
+msgstr "Добавить студента"
 
 #: .\apps\quiz\admin.py:151 .\apps\quiz\models.py:202 .\apps\quiz\models.py:287
 msgid "мәтіні"
@@ -791,7 +807,9 @@ msgstr "в одной ячейке может быть только одно и�
 msgid ""
 "сурет ұяшықтың ішіне қойылған — оны ұяшықтың үстіне қойыңыз (Кірістіру → "
 "Суреттер → Ұяшықтардың үстіне орналастыру)."
-msgstr "изображение вставлено в ячейку — вставьте его поверх ячеек (Вставка → Рисунки → Поместить над ячейками)."
+msgstr ""
+"изображение вставлено в ячейку — вставьте его поверх ячеек (Вставка → "
+"Рисунки → Поместить над ячейками)."
 
 #: .\apps\quiz\question_import.py:291
 #, python-format
@@ -801,8 +819,7 @@ msgstr "Лист «%(sheet)s», строка %(row)s, «%(column)s»: %(message)
 #: .\apps\quiz\question_import.py:324
 #, python-format
 msgid "«%(key)s» контекстіне %(total)s сұрақ байланады, ең көбі %(max)s."
-msgstr ""
-"К контексту «%(key)s» привязывается %(total)s вопросов, максимум %(max)s."
+msgstr "К контексту «%(key)s» привязывается %(total)s вопросов, максимум %(max)s."
 
 #: .\apps\quiz\question_import.py:329
 msgid "Файлда сұрақ жоқ."
@@ -870,44 +887,46 @@ msgstr "Лист «%(sheet)s»: одна строка — один вопрос.
 
 #: .\apps\quiz\question_import.py:593
 msgid "Тақырыпша, деңгей, тіл, мәтін, 4 нұсқа және дұрыс жауап — міндетті."
-msgstr ""
-"Подтема, уровень, язык, текст, 4 варианта и правильный ответ — обязательны."
+msgstr "Подтема, уровень, язык, текст, 4 варианта и правильный ответ — обязательны."
 
 #: .\apps\quiz\question_import.py:594
 msgid ""
 "Контекстік сұрақта «Контекст кілті» бағанына контекстің кілтін жазыңыз "
 "(мысалы, K1)."
-msgstr ""
-"Для вопроса к контексту укажите ключ контекста в столбце «Ключ контекста» "
-"(например, K1)."
+msgstr "Для вопроса к контексту укажите ключ контекста в столбце «Ключ контекста» (например, K1)."
 
 #: .\apps\quiz\question_import.py:597
 #, python-format
 msgid ""
 "«%(sheet)s» парағы: кілт, атауы, тіл, мәтін, код, сурет. Бір контекстке ең "
 "көбі %(max)s сұрақ."
-msgstr "Лист «%(sheet)s»: ключ, название, язык, текст, код, изображение. К одному контексту — не более %(max)s вопросов."
+msgstr ""
+"Лист «%(sheet)s»: ключ, название, язык, текст, код, изображение. К одному "
+"контексту — не более %(max)s вопросов."
 
 #: .\apps\quiz\question_import.py:604
 msgid ""
 "Сурет: Кірістіру → Суреттер → Ұяшықтардың үстіне орналастыру. Суреттің сол "
 "жақ жоғарғы бұрышын ұяшыққа қойыңыз: сұрақ пен контекст суреті — «Сурет» "
 "бағанына, жауап суреті — сол жауаптың (A–D) ұяшығына."
-msgstr "Изображение: Вставка → Рисунки → Поместить над ячейками. Левый верхний угол изображения поместите в ячейку: изображение вопроса и контекста — в столбец «Изображение», изображение ответа — в ячейку этого ответа (A–D)."
+msgstr ""
+"Изображение: Вставка → Рисунки → Поместить над ячейками. Левый верхний угол "
+"изображения поместите в ячейку: изображение вопроса и контекста — в столбец "
+"«Изображение», изображение ответа — в ячейку этого ответа (A–D)."
 
 #: .\apps\quiz\question_import.py:610
 #, python-format
 msgid ""
 "Суреті бар жауаптың мәтіні бос болуы мүмкін. Сурет — jpg, png немесе webp, "
 "ең көбі %(size)s МБ."
-msgstr "Текст ответа с изображением может быть пустым. Изображение — jpg, png или webp, не более %(size)s МБ."
+msgstr ""
+"Текст ответа с изображением может быть пустым. Изображение — jpg, png или "
+"webp, не более %(size)s МБ."
 
 #: .\apps\quiz\question_import.py:613
 msgid ""
 "Қате болса, ештеңе сақталмайды. Банкте бұрыннан бар сұрақ қайта қосылмайды."
-msgstr ""
-"При ошибке ничего не сохраняется. Вопросы, которые уже есть в банке, "
-"повторно не добавляются."
+msgstr "При ошибке ничего не сохраняется. Вопросы, которые уже есть в банке, повторно не добавляются."
 
 #: .\apps\quiz\question_import.py:615
 msgid "Мысал:"
@@ -1016,13 +1035,43 @@ msgstr "Войти"
 msgid ""
 "Студент ИИН мен кодты енгізеді. Кодты әкімші береді; жоғалса, әкімшіге "
 "хабарласыңыз."
-msgstr ""
-"Студент вводит ИИН и код. Код выдаёт администратор; если он потерян, "
-"обратитесь к администратору."
+msgstr "Студент вводит ИИН и код. Код выдаёт администратор; если он потерян, обратитесь к администратору."
 
+#: .\templates\admin\accounts\add_student.html:6
 #: .\templates\admin\accounts\import_students.html:6
 msgid "Басты бет"
 msgstr "Начало"
+
+#: .\templates\admin\accounts\add_student.html:18
+msgid "Студент қосылды."
+msgstr "Студент добавлен."
+
+#: .\templates\admin\accounts\add_student.html:27
+msgid ""
+"Кодты қазір жазып алыңыз немесе студентке беріңіз: бетті жапқан соң ол қайта "
+"көрсетілмейді. Код жоғалса — «Жаңа код жасау» әрекеті."
+msgstr "Запишите код сейчас или передайте его студенту: после закрытия страницы он больше не будет показан. Если код потерян — действие «Создать новые коды»."
+
+#: .\templates\admin\accounts\add_student.html:29
+msgid "Тағы студент қосу"
+msgstr "Добавить ещё студента"
+
+#: .\templates\admin\accounts\add_student.html:35
+msgid "Төмендегі қателерді түзетіңіз."
+msgstr "Исправьте ошибки ниже."
+
+#: .\templates\admin\accounts\add_student.html:45
+#, python-format
+msgid "Студенттің бетін ашу: %(name)s"
+msgstr "Открыть страницу студента: %(name)s"
+
+#: .\templates\admin\accounts\add_student.html:53
+msgid "Қосу"
+msgstr "Добавить"
+
+#: .\templates\admin\accounts\add_student.html:54
+msgid "Топтар тізіміне"
+msgstr "К списку групп"
 
 #: .\templates\admin\accounts\import_students.html:17
 #: .\templates\teacher\question_import.html:15
@@ -1033,9 +1082,7 @@ msgstr "В файле есть ошибки, ничего не сохранен�
 msgid ""
 "Excel файлының бірінші парағы, бағандары: Аты-жөні, Топ, ИИН (1-жол — "
 "тақырыптар). Топтар алдымен осы бөлімде құрылуы керек."
-msgstr ""
-"Первый лист файла Excel, столбцы: ФИО, Группа, ИИН (1-я строка — заголовки). "
-"Группы нужно заранее создать в этом разделе."
+msgstr "Первый лист файла Excel, столбцы: ФИО, Группа, ИИН (1-я строка — заголовки). Группы нужно заранее создать в этом разделе."
 
 #: .\templates\admin\accounts\import_students.html:26
 msgid "Студенттің логині — ИИН, құпия сөзі — жүйе жасайтын 8 цифрлы код."
@@ -1045,9 +1092,7 @@ msgstr "Логин студента — ИИН, пароль — 8-значны�
 msgid ""
 "Импорттан кейін «Аты-жөні, Топ, ИИН, Код» файлы бірден жүктеледі: кодтар тек "
 "сонда көрсетіледі, оны студенттерге таратыңыз."
-msgstr ""
-"После импорта сразу скачивается файл «ФИО, Группа, ИИН, Код»: коды "
-"показываются только в нём, раздайте его студентам."
+msgstr "После импорта сразу скачивается файл «ФИО, Группа, ИИН, Код»: коды показываются только в нём, раздайте его студентам."
 
 #: .\templates\admin\accounts\import_students.html:28
 msgid ""
@@ -1059,9 +1104,7 @@ msgstr "Если ИИН уже есть, ФИО и группа студента
 msgid ""
 "Қате болса, ештеңе сақталмайды. Код жоғалса — топтар немесе қолданушылар "
 "тізімінде «Жаңа код жасау» әрекеті."
-msgstr ""
-"При ошибке ничего не сохраняется. Если код потерян — действие «Создать новые "
-"коды» в списке групп или пользователей."
+msgstr "При ошибке ничего не сохраняется. Если код потерян — действие «Создать новые коды» в списке групп или пользователей."
 
 #: .\templates\admin\accounts\import_students.html:31
 #: .\templates\teacher\question_import.html:27
@@ -1770,8 +1813,7 @@ msgstr "Как заполнить файл"
 msgid ""
 "Үлгі файлды жүктеп алыңыз: онда бағандар, тізімнен таңдау және пәннің "
 "тақырыпшалары бар."
-msgstr ""
-"Скачайте шаблон: в нём есть столбцы, выбор из списка и подтемы предмета."
+msgstr "Скачайте шаблон: в нём есть столбцы, выбор из списка и подтемы предмета."
 
 #: .\templates\teacher\question_import.html:39
 #, python-format
@@ -1779,7 +1821,10 @@ msgid ""
 "«%(questions_sheet)s» парағы: бір жол — бір сұрақ. Тақырыпша (01–20), деңгей "
 "(A/B/C), тіл (kk/ru), сұрақ мәтіні, 4 жауап нұсқасы және дұрыс жауап әрпі (A–"
 "D) міндетті; код пен сурет — міндетті емес."
-msgstr "Лист «%(questions_sheet)s»: одна строка — один вопрос. Подтема (01–20), уровень (A/B/C), язык (kk/ru), текст вопроса, 4 варианта ответа и буква правильного ответа (A–D) обязательны; код и изображение — необязательны."
+msgstr ""
+"Лист «%(questions_sheet)s»: одна строка — один вопрос. Подтема (01–20), "
+"уровень (A/B/C), язык (kk/ru), текст вопроса, 4 варианта ответа и буква "
+"правильного ответа (A–D) обязательны; код и изображение — необязательны."
 
 #: .\templates\teacher\question_import.html:40
 #, python-format
@@ -1787,7 +1832,10 @@ msgid ""
 "«%(contexts_sheet)s» парағы (міндетті емес): кілт (мысалы, K1), атауы, тіл, "
 "мәтін, код, сурет. Контекстік сұрақта «Контекст кілті» бағанына сол кілтті "
 "жазыңыз; бір контекстке ең көбі %(max)s сұрақ."
-msgstr "Лист «%(contexts_sheet)s» (необязательный): ключ (например, K1), название, язык, текст, код, изображение. Для вопроса к контексту укажите этот ключ в столбце «Ключ контекста»; к одному контексту — не более %(max)s вопросов."
+msgstr ""
+"Лист «%(contexts_sheet)s» (необязательный): ключ (например, K1), название, "
+"язык, текст, код, изображение. Для вопроса к контексту укажите этот ключ в "
+"столбце «Ключ контекста»; к одному контексту — не более %(max)s вопросов."
 
 #: .\templates\teacher\question_import.html:41
 msgid ""
@@ -1795,32 +1843,34 @@ msgid ""
 "арқылы қойып, сол жақ жоғарғы бұрышын ұяшыққа сүйреңіз: сұрақ пен контекст "
 "суреті — «Сурет» бағанына, жауап суреті — сол жауаптың (A–D) ұяшығына. "
 "Суреті бар жауаптың мәтіні бос болуы мүмкін."
-msgstr "Вставьте изображение в Excel через «Вставка → Рисунки → Поместить над ячейками» и перетащите его левый верхний угол в ячейку: изображение вопроса и контекста — в столбец «Изображение», изображение ответа — в ячейку этого ответа (A–D). Текст ответа с изображением может быть пустым."
+msgstr ""
+"Вставьте изображение в Excel через «Вставка → Рисунки → Поместить над "
+"ячейками» и перетащите его левый верхний угол в ячейку: изображение вопроса "
+"и контекста — в столбец «Изображение», изображение ответа — в ячейку этого "
+"ответа (A–D). Текст ответа с изображением может быть пустым."
 
 #: .\templates\teacher\question_import.html:42
 msgid "Файлды осы бетте жүктеңіз. Сұрақтар таңдалған пәнге қосылады."
-msgstr ""
-"Загрузите файл на этой странице. Вопросы добавятся в выбранный предмет."
+msgstr "Загрузите файл на этой странице. Вопросы добавятся в выбранный предмет."
 
 #: .\templates\teacher\question_import.html:45
 msgid "Қате болса, ештеңе сақталмайды: қателер жол нөмірімен көрсетіледі."
-msgstr ""
-"При ошибке ничего не сохраняется: ошибки показываются с номером строки."
+msgstr "При ошибке ничего не сохраняется: ошибки показываются с номером строки."
 
 #: .\templates\teacher\question_import.html:46
 msgid ""
 "Банкте бұрыннан бар сұрақ (мәтіні, тілі, тақырыпшасы бірдей) қайта "
 "қосылмайды."
-msgstr ""
-"Вопрос, который уже есть в банке (тот же текст, язык и подтема), повторно не "
-"добавляется."
+msgstr "Вопрос, который уже есть в банке (тот же текст, язык и подтема), повторно не добавляется."
 
 #: .\templates\teacher\question_import.html:47
 #, python-format
 msgid ""
 "Сурет — jpg, png немесе webp, әрқайсысы ең көбі %(size)s МБ. Ұяшықтың ішіне "
 "қойылған сурет (Place in Cell) оқылмайды."
-msgstr "Изображения — jpg, png или webp, каждое не более %(size)s МБ. Изображение, вставленное в ячейку (Place in Cell), не читается."
+msgstr ""
+"Изображения — jpg, png или webp, каждое не более %(size)s МБ. Изображение, "
+"вставленное в ячейку (Place in Cell), не читается."
 
 #: .\templates\teacher\question_import.html:48
 #, python-format

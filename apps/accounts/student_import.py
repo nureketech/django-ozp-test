@@ -161,25 +161,37 @@ def import_students(file):
     return result
 
 
+def save_student(user, full_name, group):
+    """Студенттің аты-жөні мен тобын сақтайды (профильді post_save сигналы жасайды)."""
+    user.last_name, user.first_name = split_name(full_name)
+    user.save()
+    user.profile.group = group
+    user.profile.save()
+
+
+def create_student(full_name, group, iin):
+    """
+    Жаңа студент (импортта да, admin-дегі «Студент қосу» бетінде де): логин — ИИН,
+    құпия сөз — жаңа код. Қайтарады: (студент, кодтың өзі).
+    """
+    user = User(username=iin)
+    code = set_access_code(user)
+    save_student(user, full_name, group)
+    return user, code
+
+
 @transaction.atomic
 def save_students(students, existing, result):
     """Тексерілген студенттерді бір транзакцияда сақтайды."""
     for student in students:
-        last_name, first_name = split_name(student["name"])
         user = existing.get(student["iin"])
         code = None
         if user is None:
-            user = User(username=student["iin"])
-            code = set_access_code(user)
+            user, code = create_student(student["name"], student["group"], student["iin"])
             result["created"] += 1
         else:
+            save_student(user, student["name"], student["group"])
             result["updated"] += 1
-        user.first_name = first_name
-        user.last_name = last_name
-        user.save()
-        # Профильді post_save сигналы жасайды
-        user.profile.group = student["group"]
-        user.profile.save()
         result["rows"].append(
             {"name": student["name"], "group": student["group"].name, "iin": student["iin"], "code": code}
         )

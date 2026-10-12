@@ -551,3 +551,88 @@ class LoginFormTests(TestCase):
             reverse("accounts:login"), {"username": "teacher", "password": "pass12345"}
         )
         self.assertEqual(response.status_code, 302)
+
+
+class AddStudentTests(TestCase):
+    """Admin-дегі «Студент қосу»: бір студент, код экранда бір рет көрсетіледі."""
+
+    def setUp(self):
+        self.admin = User.objects.create_superuser(username="admin", password="pass12345")
+        self.client.force_login(self.admin)
+        self.group = StudyGroup.objects.create(name="ИНФ-21", subject=informatics(), language="kk")
+        self.url = reverse("admin:accounts_studygroup_add_student")
+
+    def add(self, **overrides):
+        data = {"full_name": "Сапарова Айгерім Нұрланқызы", "group": self.group.pk, "iin": IIN_AIGERIM}
+        data.update(overrides)
+        return self.client.post(self.url, data)
+
+    def test_button_on_group_list(self):
+        response = self.client.get(reverse("admin:accounts_studygroup_changelist"))
+        self.assertContains(response, self.url)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "ИНФ-21 — Информатика (Қазақша)")
+
+    def test_add_student_shows_code_once(self):
+        response = self.add(iin="0503 1265 0125", full_name="  Сапарова   Айгерім Нұрланқызы ")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("no-cache", response["Cache-Control"])
+        student = User.objects.get(username=IIN_AIGERIM)
+        self.assertEqual((student.last_name, student.first_name), ("Сапарова", "Айгерім Нұрланқызы"))
+        self.assertEqual(student.profile.group, self.group)
+        self.assertFalse(student.is_staff)
+
+        code = response.context["created"]["code"]
+        self.assertRegex(code, r"^\d{8}$")
+        self.assertContains(response, f'<strong id="access-code"')
+        self.assertContains(response, code)
+        self.assertTrue(student.check_password(code))
+        # Форма тазаланып, келесі студентті қосуға дайын
+        self.assertFalse(response.context["form"].is_bound)
+
+        # Бетті қайта ашқанда код көрінбейді
+        self.assertNotContains(self.client.get(self.url), code)
+
+    def test_errors(self):
+        cases = {
+            "full_name": {"full_name": "   "},
+            "group": {"group": ""},
+            "iin": {"iin": "050312650124"},
+        }
+        for field, overrides in cases.items():
+            with self.subTest(field=field):
+                response = self.add(**overrides)
+                self.assertIn(field, response.context["form"].errors)
+        self.assertFalse(User.objects.filter(username=IIN_AIGERIM).exists())
+
+    def test_existing_iin_links_to_student(self):
+        self.add()
+        student = User.objects.get(username=IIN_AIGERIM)
+        response = self.add(full_name="Басқа Адам")
+        self.assertContains(response, "Бұл ИИН-мен студент бұрыннан бар.")
+        self.assertContains(response, reverse("admin:auth_user_change", args=[student.pk]))
+        self.assertEqual(User.objects.filter(username=IIN_AIGERIM).count(), 1)
+        student.refresh_from_db()
+        self.assertEqual(student.last_name, "Сапарова")
+
+    def test_staff_iin_is_rejected(self):
+        User.objects.create_user(username=IIN_ERLAN, password="pass12345", is_staff=True)
+        response = self.add(iin=IIN_ERLAN)
+        self.assertContains(response, "қызметкердің логині")
+
+    def test_teacher_cannot_add_student(self):
+        teacher = User.objects.create_user(username="teacher", password="pass12345", is_staff=True)
+        teacher.profile.subjects.add(informatics())
+        self.client.force_login(teacher)
+        response = self.client.get(reverse("admin:accounts_studygroup_changelist"))
+        self.assertNotContains(response, self.url)
+        self.assertEqual(self.client.get(self.url).status_code, 403)
+        self.assertEqual(self.add().status_code, 403)
+        self.assertFalse(User.objects.filter(username=IIN_AIGERIM).exists())
+
+    def test_page_in_russian(self):
+        self.client.cookies["django_language"] = "ru"
+        response = self.add()
+        self.assertContains(response, "Студент добавлен.")
+        self.assertContains(response, "Добавить студента")
