@@ -553,6 +553,27 @@ class LoginFormTests(TestCase):
         self.assertEqual(response.status_code, 302)
 
 
+class StudentsNavLinkTests(TestCase):
+    """Навбардағы «Студенттер» — тек әкімшіге, admin-дегі топтар тізіміне апарады."""
+
+    def test_superuser_sees_link(self):
+        admin_user = User.objects.create_superuser(username="admin", password="pass12345")
+        self.client.force_login(admin_user)
+        response = self.client.get(reverse("quiz:teacher_questions"))
+        self.assertContains(response, reverse("admin:accounts_studygroup_changelist"))
+        self.assertContains(response, ">Студенттер</a>")
+
+    def test_teacher_and_student_do_not_see_link(self):
+        teacher = User.objects.create_user(username="teacher", password="pass12345", is_staff=True)
+        teacher.profile.subjects.add(informatics())
+        student = User.objects.create_user(username="student", password="pass12345")
+        for user, url in [(teacher, "quiz:teacher_questions"), (student, "quiz:dashboard")]:
+            with self.subTest(user=user.username):
+                self.client.force_login(user)
+                response = self.client.get(reverse(url))
+                self.assertNotContains(response, reverse("admin:accounts_studygroup_changelist"))
+
+
 class AddStudentTests(TestCase):
     """Admin-дегі «Студент қосу»: бір студент, код экранда бір рет көрсетіледі."""
 
