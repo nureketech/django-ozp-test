@@ -1,13 +1,14 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
+from django.db.models import Q
 from django.forms.models import BaseInlineFormSet, construct_instance
 from django.utils.translation import gettext_lazy as _
 
 from apps.quiz.forms import add_bootstrap_classes
 
 from .models import Profile, StudyGroup
-from .student_import import iin_is_valid, normalize_iin, split_name
+from .student_import import iin_is_valid, normalize_iin, split_name, student_name
 
 
 class LoginForm(AuthenticationForm):
@@ -39,11 +40,12 @@ class GroupChoiceField(forms.ModelChoiceField):
         return f"{group.name} — {group.subject.name} ({group.get_language_display()})"
 
 
-class StudentAddForm(forms.Form):
+class StudentForm(forms.Form):
     """
-    Admin-дегі «Студент қосу» (тек әкімші): аты-жөні, тобы, ИИН. Тексерулер
-    Excel импортымен бірдей. ИИН-мен студент бұрыннан бар болса — existing_user
-    (шаблон оның бетіне сілтеме көрсетеді).
+    «Студенттер» беттерінде студент қосу және өңдеу (тек әкімші): аты-жөні, тобы,
+    ИИН. Тексерулер Excel импортымен бірдей. user — өңделетін студент (қосқанда None).
+    ИИН-мен басқа студент бұрыннан бар болса — existing_user (шаблон оның бетіне
+    сілтеме көрсетеді).
     """
 
     full_name = forms.CharField(
@@ -57,10 +59,19 @@ class StudentAddForm(forms.Form):
     )
     iin = forms.CharField(label=_("ИИН"), max_length=20)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, user=None, **kwargs):
+        if user is not None and "initial" not in kwargs:
+            profile = getattr(user, "profile", None)
+            kwargs["initial"] = {
+                "full_name": student_name(user),
+                "group": profile.group_id if profile else None,
+                "iin": user.username,
+            }
         super().__init__(*args, **kwargs)
+        self.user = user
         self.existing_user = None
         self.fields["iin"].widget.attrs["inputmode"] = "numeric"
+        add_bootstrap_classes(self)
 
     def clean_full_name(self):
         full_name = " ".join(self.cleaned_data["full_name"].split())
@@ -72,13 +83,47 @@ class StudentAddForm(forms.Form):
         iin = normalize_iin(self.cleaned_data["iin"])
         if not iin_is_valid(iin):
             raise forms.ValidationError(_("12 цифрдан тұрып, бақылау цифры дұрыс болуы керек."))
-        user = User.objects.filter(username=iin).first()
-        if user is not None and user.is_staff:
+        other = User.objects.filter(username=iin)
+        if self.user is not None:
+            other = other.exclude(pk=self.user.pk)
+        other = other.first()
+        if other is not None and (other.is_staff or other.is_superuser):
             raise forms.ValidationError(_("бұл — қызметкердің логині, оны өзгертуге болмайды."))
-        if user is not None:
-            self.existing_user = user
+        if other is not None:
+            self.existing_user = other
             raise forms.ValidationError(_("Бұл ИИН-мен студент бұрыннан бар."))
         return iin
+
+
+class StudentFilterForm(forms.Form):
+    """Студенттер тізімінің сүзгісі (GET): топ және аты-жөні не ИИН бойынша іздеу."""
+
+    group = GroupChoiceField(
+        label=_("Топ"),
+        queryset=StudyGroup.objects.select_related("subject").order_by("name"),
+        required=False,
+        empty_label=_("Барлық топ"),
+    )
+    q = forms.CharField(label=_("Іздеу"), required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["q"].widget.attrs["placeholder"] = _("Аты-жөні немесе ИИН")
+        add_bootstrap_classes(self)
+
+    def filter(self, users):
+        """Сүзгіні студенттер тізіміне қолданады (сүзгі қате болса — тізім өзгермейді)."""
+        if not self.is_valid():
+            return users
+        if self.cleaned_data["group"]:
+            users = users.filter(profile__group=self.cleaned_data["group"])
+        for word in self.cleaned_data["q"].split():
+            users = users.filter(
+                Q(username__icontains=word)
+                | Q(last_name__icontains=word)
+                | Q(first_name__icontains=word)
+            )
+        return users
 
 
 class ProfileInlineFormSet(BaseInlineFormSet):

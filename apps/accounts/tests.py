@@ -1,3 +1,4 @@
+import re
 from datetime import timedelta
 from io import BytesIO, StringIO
 
@@ -327,13 +328,10 @@ class TeacherAdminAccessTests(TestCase):
         self.assertContains(response, reverse("admin:accounts_studygroup_changelist"))
         self.assertNotContains(response, reverse("admin:auth_user_changelist"))
 
-    def test_teacher_cannot_import_students(self):
+    def test_teacher_does_not_see_student_tools(self):
         response = self.client.get(reverse("admin:accounts_studygroup_changelist"))
-        self.assertNotContains(response, reverse("admin:accounts_studygroup_import"))
+        self.assertNotContains(response, reverse("students:list"))
         self.assertNotContains(response, "regenerate_group_codes")
-        for url_name in ["accounts_studygroup_import", "accounts_studygroup_import_template"]:
-            with self.subTest(url_name=url_name):
-                self.assertEqual(self.client.get(reverse(f"admin:{url_name}")).status_code, 403)
 
 
 # ---------- Студенттерді Excel-ден импорттау, ИИН + код арқылы кіру ----------
@@ -392,18 +390,18 @@ class StudentImportTests(TestCase):
 
     def upload(self, rows):
         return self.client.post(
-            reverse("admin:accounts_studygroup_import"), {"file": students_file(rows)}
+            reverse("students:import"), {"file": students_file(rows)}
         )
 
-    def test_page_opens_from_group_list(self):
-        response = self.client.get(reverse("admin:accounts_studygroup_changelist"))
-        self.assertContains(response, reverse("admin:accounts_studygroup_import"))
-        response = self.client.get(reverse("admin:accounts_studygroup_import"))
+    def test_page_opens_from_student_list(self):
+        response = self.client.get(reverse("students:list"))
+        self.assertContains(response, reverse("students:import"))
+        response = self.client.get(reverse("students:import"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, reverse("admin:accounts_studygroup_import_template"))
+        self.assertContains(response, reverse("students:import_template"))
 
     def test_template_lists_groups(self):
-        response = self.client.get(reverse("admin:accounts_studygroup_import_template"))
+        response = self.client.get(reverse("students:import_template"))
         self.assertIn("students-template-", response["Content-Disposition"])
         workbook = load_workbook(BytesIO(response.content))
         groups = [row[0] for row in workbook.worksheets[1].iter_rows(min_row=2, values_only=True)]
@@ -444,7 +442,7 @@ class StudentImportTests(TestCase):
 
     def test_success_message_on_next_page(self):
         self.upload([["Сапарова Айгерім", "ИНФ-21", IIN_AIGERIM]])
-        response = self.client.get(reverse("admin:accounts_studygroup_changelist"))
+        response = self.client.get(reverse("students:list"))
         self.assertContains(response, "жаңасы — 1, жаңартылғаны — 0")
 
     def test_errors_save_nothing(self):
@@ -489,7 +487,7 @@ class StudentImportTests(TestCase):
 
     def test_file_checks(self):
         response = self.client.post(
-            reverse("admin:accounts_studygroup_import"),
+            reverse("students:import"),
             {"file": SimpleUploadedFile("students.csv", b"a;b")},
         )
         self.assertIn("file", response.context["form"].errors)
@@ -532,7 +530,7 @@ class StudentImportTests(TestCase):
 
     def test_page_in_russian(self):
         self.client.cookies["django_language"] = "ru"
-        response = self.client.get(reverse("admin:accounts_studygroup_import"))
+        response = self.client.get(reverse("students:import"))
         self.assertContains(response, "Импорт студентов")
         response = self.upload([["", "ИНФ-21", IIN_AIGERIM]])
         self.assertContains(response, "строка 2, «Имя и фамилия»: не должно быть пустым.")
@@ -554,14 +552,16 @@ class LoginFormTests(TestCase):
 
 
 class StudentsNavLinkTests(TestCase):
-    """Навбардағы «Студенттер» — тек әкімшіге, admin-дегі топтар тізіміне апарады."""
+    """Навбардағы «Студенттер» — тек әкімшіге, сайттағы /students/ бетіне апарады."""
 
     def test_superuser_sees_link(self):
         admin_user = User.objects.create_superuser(username="admin", password="pass12345")
         self.client.force_login(admin_user)
         response = self.client.get(reverse("quiz:teacher_questions"))
-        self.assertContains(response, reverse("admin:accounts_studygroup_changelist"))
-        self.assertContains(response, ">Студенттер</a>")
+        self.assertContains(response, f'href="{reverse("students:list")}"')
+        # Admin-дегі топтар тізімінде де сайттағы бетке сілтеме бар
+        response = self.client.get(reverse("admin:accounts_studygroup_changelist"))
+        self.assertContains(response, reverse("students:list"))
 
     def test_teacher_and_student_do_not_see_link(self):
         teacher = User.objects.create_user(username="teacher", password="pass12345", is_staff=True)
@@ -571,27 +571,113 @@ class StudentsNavLinkTests(TestCase):
             with self.subTest(user=user.username):
                 self.client.force_login(user)
                 response = self.client.get(reverse(url))
-                self.assertNotContains(response, reverse("admin:accounts_studygroup_changelist"))
+                self.assertNotContains(response, f'href="{reverse("students:list")}"')
 
 
-class AddStudentTests(TestCase):
-    """Admin-дегі «Студент қосу»: бір студент, код экранда бір рет көрсетіледі."""
+class StudentPagesAccessTests(TestCase):
+    """«Студенттер» беттері тек әкімшіге: оқытушы мен студентке — 403, қонаққа — кіру беті."""
 
+    def setUp(self):
+        group = StudyGroup.objects.create(name="ИНФ-21", subject=informatics(), language="kk")
+        self.student = User.objects.create_user(username=IIN_AIGERIM, password="pass12345")
+        self.student.profile.group = group
+        self.student.profile.save()
+        self.urls = [
+            ("get", reverse("students:list")),
+            ("get", reverse("students:add")),
+            ("get", reverse("students:edit", args=[self.student.pk])),
+            ("post", reverse("students:new_code", args=[self.student.pk])),
+            ("get", reverse("students:import")),
+            ("get", reverse("students:import_template")),
+        ]
+
+    def request(self, method, url):
+        return getattr(self.client, method)(url)
+
+    def test_guest_goes_to_login(self):
+        for method, url in self.urls:
+            with self.subTest(url=url):
+                response = self.request(method, url)
+                self.assertEqual(response.status_code, 302)
+                self.assertIn(reverse("accounts:login"), response["Location"])
+
+    def test_teacher_and_student_get_403(self):
+        teacher = User.objects.create_user(username="teacher", password="pass12345", is_staff=True)
+        teacher.profile.subjects.add(informatics())
+        for user in [teacher, self.student]:
+            self.client.force_login(user)
+            for method, url in self.urls:
+                with self.subTest(user=user.username, url=url):
+                    self.assertEqual(self.request(method, url).status_code, 403)
+        self.assertTrue(User.objects.get(pk=self.student.pk).check_password("pass12345"))
+
+    def test_staff_cannot_be_edited_here(self):
+        admin_user = User.objects.create_superuser(username="admin", password="pass12345")
+        self.client.force_login(admin_user)
+        for url in [reverse("students:edit", args=[admin_user.pk])]:
+            self.assertEqual(self.client.get(url).status_code, 404)
+        response = self.client.post(reverse("students:new_code", args=[admin_user.pk]))
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(self.client.get(reverse("students:new_code", args=[self.student.pk])).status_code, 405)
+
+
+class StudentPagesTestCase(TestCase):
     def setUp(self):
         self.admin = User.objects.create_superuser(username="admin", password="pass12345")
         self.client.force_login(self.admin)
         self.group = StudyGroup.objects.create(name="ИНФ-21", subject=informatics(), language="kk")
-        self.url = reverse("admin:accounts_studygroup_add_student")
+        self.group2 = StudyGroup.objects.create(name="ИНФ-22", subject=informatics(), language="ru")
+
+    def make_student(self, iin, last_name, first_name, group):
+        user = User.objects.create_user(
+            username=iin, password="pass12345", last_name=last_name, first_name=first_name
+        )
+        user.profile.group = group
+        user.profile.save()
+        return user
+
+
+class StudentListTests(StudentPagesTestCase):
+    def setUp(self):
+        super().setUp()
+        self.aigerim = self.make_student(IIN_AIGERIM, "Сапарова", "Айгерім", self.group)
+        self.dana = self.make_student(IIN_DANA, "Ахметова", "Дана", self.group2)
+
+    def names(self, response):
+        return [user.username for user in response.context["page"]]
+
+    def test_list_shows_only_students(self):
+        response = self.client.get(reverse("students:list"))
+        self.assertEqual(self.names(response), [IIN_DANA, IIN_AIGERIM])  # тегі бойынша: А, С
+        self.assertContains(response, "Сапарова Айгерім")
+        self.assertContains(response, reverse("students:add"))
+        self.assertContains(response, reverse("students:import"))
+        self.assertContains(response, reverse("students:edit", args=[self.aigerim.pk]))
+        self.assertContains(response, reverse("students:new_code", args=[self.aigerim.pk]))
+        self.assertNotIn("admin", self.names(response))
+
+    def test_filter_by_group_and_search(self):
+        response = self.client.get(reverse("students:list"), {"group": self.group2.pk})
+        self.assertEqual(self.names(response), [IIN_DANA])
+        # SQLite кириллицаның бас/кіші әрпін ажыратады (PostgreSQL — жоқ), сондықтан «Сапар»
+        response = self.client.get(reverse("students:list"), {"q": "Сапар"})
+        self.assertEqual(self.names(response), [IIN_AIGERIM])
+        response = self.client.get(reverse("students:list"), {"q": IIN_DANA[:6]})
+        self.assertEqual(self.names(response), [IIN_DANA])
+        response = self.client.get(reverse("students:list"), {"q": "Сапарова Дана"})
+        self.assertEqual(self.names(response), [])
+
+
+class AddStudentTests(StudentPagesTestCase):
+    """Бір студентті қосу: код экранда бір рет көрсетіледі."""
 
     def add(self, **overrides):
         data = {"full_name": "Сапарова Айгерім Нұрланқызы", "group": self.group.pk, "iin": IIN_AIGERIM}
         data.update(overrides)
-        return self.client.post(self.url, data)
+        return self.client.post(reverse("students:add"), data)
 
-    def test_button_on_group_list(self):
-        response = self.client.get(reverse("admin:accounts_studygroup_changelist"))
-        self.assertContains(response, self.url)
-        response = self.client.get(self.url)
+    def test_page_shows_groups_with_subject_and_language(self):
+        response = self.client.get(reverse("students:add"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "ИНФ-21 — Информатика (Қазақша)")
 
@@ -604,16 +690,14 @@ class AddStudentTests(TestCase):
         self.assertEqual(student.profile.group, self.group)
         self.assertFalse(student.is_staff)
 
-        code = response.context["created"]["code"]
+        code = response.context["code"]
         self.assertRegex(code, r"^\d{8}$")
-        self.assertContains(response, f'<strong id="access-code"')
+        self.assertContains(response, 'id="access-code"')
         self.assertContains(response, code)
+        self.assertContains(response, reverse("students:add"))  # «Тағы студент қосу»
         self.assertTrue(student.check_password(code))
-        # Форма тазаланып, келесі студентті қосуға дайын
-        self.assertFalse(response.context["form"].is_bound)
-
-        # Бетті қайта ашқанда код көрінбейді
-        self.assertNotContains(self.client.get(self.url), code)
+        # Тізімде код көрінбейді
+        self.assertNotContains(self.client.get(reverse("students:list")), code)
 
     def test_errors(self):
         cases = {
@@ -628,32 +712,104 @@ class AddStudentTests(TestCase):
         self.assertFalse(User.objects.filter(username=IIN_AIGERIM).exists())
 
     def test_existing_iin_links_to_student(self):
-        self.add()
-        student = User.objects.get(username=IIN_AIGERIM)
+        student = self.make_student(IIN_AIGERIM, "Сапарова", "Айгерім", self.group)
         response = self.add(full_name="Басқа Адам")
         self.assertContains(response, "Бұл ИИН-мен студент бұрыннан бар.")
-        self.assertContains(response, reverse("admin:auth_user_change", args=[student.pk]))
+        self.assertContains(response, reverse("students:edit", args=[student.pk]))
         self.assertEqual(User.objects.filter(username=IIN_AIGERIM).count(), 1)
-        student.refresh_from_db()
-        self.assertEqual(student.last_name, "Сапарова")
 
     def test_staff_iin_is_rejected(self):
         User.objects.create_user(username=IIN_ERLAN, password="pass12345", is_staff=True)
         response = self.add(iin=IIN_ERLAN)
         self.assertContains(response, "қызметкердің логині")
 
-    def test_teacher_cannot_add_student(self):
-        teacher = User.objects.create_user(username="teacher", password="pass12345", is_staff=True)
-        teacher.profile.subjects.add(informatics())
-        self.client.force_login(teacher)
-        response = self.client.get(reverse("admin:accounts_studygroup_changelist"))
-        self.assertNotContains(response, self.url)
-        self.assertEqual(self.client.get(self.url).status_code, 403)
-        self.assertEqual(self.add().status_code, 403)
-        self.assertFalse(User.objects.filter(username=IIN_AIGERIM).exists())
-
     def test_page_in_russian(self):
         self.client.cookies["django_language"] = "ru"
+        response = self.client.get(reverse("students:add"))
+        self.assertContains(response, "Добавить студента")
         response = self.add()
         self.assertContains(response, "Студент добавлен.")
-        self.assertContains(response, "Добавить студента")
+
+
+class EditStudentTests(StudentPagesTestCase):
+    def setUp(self):
+        super().setUp()
+        self.student = self.make_student(IIN_AIGERIM, "Сапарова", "Айгерім", self.group)
+        self.url = reverse("students:edit", args=[self.student.pk])
+
+    def test_form_has_current_values(self):
+        form = self.client.get(self.url).context["form"]
+        self.assertEqual(form["full_name"].value(), "Сапарова Айгерім")
+        self.assertEqual(form["group"].value(), self.group.pk)
+        self.assertEqual(form["iin"].value(), IIN_AIGERIM)
+
+    def test_edit_name_group_and_iin_keeps_code(self):
+        data = {"full_name": "Сапарова Айгерім Нұрланқызы", "group": self.group2.pk, "iin": IIN_DANA}
+        response = self.client.post(self.url, data)
+        self.assertRedirects(response, reverse("students:list"))
+        self.student.refresh_from_db()
+        self.assertEqual(self.student.username, IIN_DANA)
+        self.assertEqual(self.student.first_name, "Айгерім Нұрланқызы")
+        self.assertEqual(self.student.profile.group, self.group2)
+        self.assertTrue(self.student.check_password("pass12345"))
+
+    def test_same_iin_is_allowed(self):
+        data = {"full_name": "Сапарова Айгерім", "group": self.group.pk, "iin": IIN_AIGERIM}
+        self.assertRedirects(self.client.post(self.url, data), reverse("students:list"))
+
+    def test_iin_of_other_student_is_rejected(self):
+        other = self.make_student(IIN_DANA, "Әлиева", "Дана", self.group)
+        data = {"full_name": "Сапарова Айгерім", "group": self.group.pk, "iin": IIN_DANA}
+        response = self.client.post(self.url, data)
+        self.assertContains(response, "Бұл ИИН-мен студент бұрыннан бар.")
+        self.assertContains(response, reverse("students:edit", args=[other.pk]))
+        self.student.refresh_from_db()
+        self.assertEqual(self.student.username, IIN_AIGERIM)
+
+
+class NewCodeTests(StudentPagesTestCase):
+    def test_new_code_replaces_old_one(self):
+        student = self.make_student(IIN_AIGERIM, "Сапарова", "Айгерім", self.group)
+        response = self.client.post(reverse("students:new_code", args=[student.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("no-cache", response["Cache-Control"])
+        code = response.context["code"]
+        self.assertRegex(code, r"^\d{8}$")
+        self.assertContains(response, "Ескі код енді жұмыс істемейді.")
+        student.refresh_from_db()
+        self.assertTrue(student.check_password(code))
+        self.assertFalse(student.check_password("pass12345"))
+
+
+class StudentPagesRussianTests(StudentPagesTestCase):
+    """«Студенттер» беттері орысша ашылғанда қазақша мәтін қалмауы керек (деректер латынша)."""
+
+    KAZAKH_ONLY_LETTERS = re.compile(r"[әғқңөұүһіӘҒҚҢӨҰҮҺІ]")
+
+    def assert_russian(self, response, name):
+        html = re.sub(r"<(style|script)\b.*?</\1>", "", response.content.decode(), flags=re.S)
+        html = re.sub(r"<!--.*?-->", "", html, flags=re.S)
+        found = [html[max(0, m.start() - 60) : m.end() + 60] for m in self.KAZAKH_ONLY_LETTERS.finditer(html)]
+        self.assertEqual(found, [], f"{name}: аударылмаған мәтін")
+
+    def test_pages_in_russian(self):
+        StudyGroup.objects.filter(pk=self.group.pk).update(name="INF-21")
+        StudyGroup.objects.filter(pk=self.group2.pk).update(name="INF-22")
+        student = self.make_student(IIN_AIGERIM, "Saparova", "Aigerim", self.group)
+        self.client.cookies["django_language"] = "ru"
+        pages = {
+            "list": self.client.get(reverse("students:list")),
+            "add": self.client.get(reverse("students:add")),
+            "add errors": self.client.post(reverse("students:add"), {"iin": "1"}),
+            "edit": self.client.get(reverse("students:edit", args=[student.pk])),
+            "new code": self.client.post(reverse("students:new_code", args=[student.pk])),
+            "import": self.client.get(reverse("students:import")),
+            "added": self.client.post(
+                reverse("students:add"),
+                {"full_name": "Alieva Dana", "group": self.group.pk, "iin": IIN_DANA},
+            ),
+        }
+        for name, response in pages.items():
+            with self.subTest(page=name):
+                self.assertEqual(response.status_code, 200)
+                self.assert_russian(response, name)

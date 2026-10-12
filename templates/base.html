@@ -81,10 +81,10 @@
                     <li class="nav-item">
                         <a class="nav-link{% if 'teacher_results' in url_name or url_name == 'attempt_result' %} active{% endif %}" href="{% url 'quiz:teacher_results' %}">{% translate "Нәтижелер" %}</a>
                     </li>
-                    {# Студенттерді тек әкімші қосады: топтар тізімінде «Студент қосу» мен «Студенттерді импорттау» #}
+                    {# Студенттерді тек әкімші қосады, өңдейді, импорттайды (/students/) #}
                     {% if user.is_superuser %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'admin:accounts_studygroup_changelist' %}">{% translate "Студенттер" %}</a>
+                            <a class="nav-link{% if request.resolver_match.namespace == 'students' %} active{% endif %}" href="{% url 'students:list' %}">{% translate "Студенттер" %}</a>
                         </li>
                     {% endif %}
                     <li class="nav-item">

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Студенттерді импорттау" %}{% endblock %}
+
+{% block content %}
+
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+    <h1 class="h4 mb-0 me-auto">{% translate "Студенттерді Excel-ден импорттау" %}</h1>
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'students:list' %}">{% translate "Тізімге оралу" %}</a>
+</div>
+
+{% if result.errors %}
+    <div class="alert alert-danger">
+        <div class="fw-semibold mb-1">{% translate "Файлда қате бар, ештеңе сақталмады. Түзетіп, қайта жүктеңіз:" %}</div>
+        <ul class="mb-0 small">
+            {% for error in result.errors %}<li>{{ error }}</li>{% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <form method="post" enctype="multipart/form-data" class="bg-white rounded shadow-sm p-3 p-md-4" novalidate>
+            {% csrf_token %}
+            <p class="mb-3">
+                <a class="btn btn-outline-primary" href="{% url 'students:import_template' %}">{% translate "Үлгі файлды жүктеп алу" %}</a>
+            </p>
+            {% include "teacher/_field.html" with field=form.file %}
+            <button type="submit" class="btn btn-primary">{% translate "Импорттау" %}</button>
+        </form>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="bg-white rounded shadow-sm p-3 p-md-4 small">
+            <h2 class="h6">{% translate "Файлды қалай толтыру керек" %}</h2>
+            <ol class="mb-3">
+                <li>{% translate "Excel файлының бірінші парағы, бағандары: Аты-жөні, Топ, ИИН (1-жол — тақырыптар). Топтар алдымен admin-де құрылуы керек; үлгі файлда олардың тізімі бар." %}</li>
+                <li>{% blocktranslate with length=code_length %}Студенттің логині — ИИН, құпия сөзі — жүйе жасайтын {{ length }} цифрлы код.{% endblocktranslate %}</li>
+                <li>{% translate "Импорттан кейін «Аты-жөні, Топ, ИИН, Код» файлы бірден жүктеледі: кодтар тек сонда көрсетіледі, оны студенттерге таратыңыз." %}</li>
+            </ol>
+            <ul class="text-muted mb-0">
+                <li>{% translate "ИИН бұрыннан бар болса, студенттің аты-жөні мен тобы жаңартылады, коды өзгермейді." %}</li>
+                <li>{% translate "Қате болса, ештеңе сақталмайды: қателер жол нөмірімен көрсетіледі." %}</li>
+                <li>{% blocktranslate with size=max_file_mb %}Файлдың көлемі ең көбі {{ size }} МБ.{% endblocktranslate %}</li>
+                <li>{% blocktranslate with max=max_rows %}Бір парақта ең көбі {{ max }} жол.{% endblocktranslate %}</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

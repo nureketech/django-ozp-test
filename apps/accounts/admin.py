@@ -2,7 +2,6 @@ from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 from django.db.models import Count
-from django.urls import path
 from django.utils.translation import gettext_lazy as _
 
 from apps.quiz.admin import TeacherSubjectAdminMixin
@@ -10,12 +9,7 @@ from apps.quiz.admin import TeacherSubjectAdminMixin
 from .forms import ProfileInlineFormSet
 from .models import Profile, StudyGroup
 from .student_import import codes_workbook, regenerate_codes
-from .views import (
-    add_student_view,
-    import_students_template_view,
-    import_students_view,
-    xlsx_response,
-)
+from .student_views import xlsx_response
 
 
 def codes_file_response(request, rows):
@@ -40,29 +34,9 @@ class StudyGroupAdmin(TeacherSubjectAdminMixin, admin.ModelAdmin):
     list_display = ["name", "subject", "language", "student_count"]
     list_filter = ["subject", "language"]
     search_fields = ["name"]
-    # Тізімнің үстінде «Студенттерді импорттау» батырмасы (тек әкімшіге)
+    # Тізімнің үстінде «Студенттерді басқару» батырмасы (тек әкімшіге) — сайттағы /students/
     change_list_template = "admin/accounts/studygroup/change_list.html"
     actions = ["regenerate_group_codes"]
-
-    def get_urls(self):
-        urls = [
-            path(
-                "import-students/",
-                self.admin_site.admin_view(import_students_view),
-                name="accounts_studygroup_import",
-            ),
-            path(
-                "add-student/",
-                self.admin_site.admin_view(add_student_view),
-                name="accounts_studygroup_add_student",
-            ),
-            path(
-                "import-students/template/",
-                self.admin_site.admin_view(import_students_template_view),
-                name="accounts_studygroup_import_template",
-            ),
-        ]
-        return urls + super().get_urls()
 
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(students=Count("profiles"))

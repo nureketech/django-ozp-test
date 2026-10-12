@@ -169,6 +169,22 @@ def save_student(user, full_name, group):
     user.profile.save()
 
 
+def students():
+    """Студенттер: қызметкерлер (is_staff) мен әкімшілерсіз — «Студенттер» беттері тек осыларды көреді."""
+    return User.objects.filter(is_staff=False, is_superuser=False)
+
+
+def student_name(user):
+    """Студенттің аты-жөні импорттағыдай: «Тегі Аты» (бос болса — логині)."""
+    return f"{user.last_name} {user.first_name}".strip() or user.username
+
+
+def update_student(user, name, group, iin):
+    """Студентті өңдеу: аты-жөні, тобы, ИИН (логин). Коды өзгермейді."""
+    user.username = iin
+    save_student(user, name, group)
+
+
 def create_student(full_name, group, iin):
     """
     Жаңа студент (импортта да, admin-дегі «Студент қосу» бетінде де): логин — ИИН,
@@ -221,7 +237,7 @@ def regenerate_codes(users):
         group = user.profile.group if hasattr(user, "profile") else None
         rows.append(
             {
-                "name": f"{user.last_name} {user.first_name}".strip() or user.username,
+                "name": student_name(user),
                 "group": group.name if group else "",
                 "iin": user.username,
                 "code": code,

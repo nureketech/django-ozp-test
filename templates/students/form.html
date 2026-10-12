@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% if student %}{% translate "Студентті өңдеу" %}{% else %}{% translate "Студент қосу" %}{% endif %}{% endblock %}
+
+{% block content %}
+
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+    <h1 class="h4 mb-0 me-auto">{% if student %}{% translate "Студентті өңдеу" %}{% else %}{% translate "Студент қосу" %}{% endif %}</h1>
+    <a class="btn btn-sm btn-outline-secondary" href="{% url 'students:list' %}">{% translate "Тізімге оралу" %}</a>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <form method="post" class="bg-white rounded shadow-sm p-3 p-md-4" novalidate>
+            {% csrf_token %}
+            {% include "teacher/_field.html" with field=form.full_name %}
+            {% include "teacher/_field.html" with field=form.group %}
+            {% include "teacher/_field.html" with field=form.iin %}
+            {% if form.existing_user %}
+                <p class="small">
+                    <a href="{% url 'students:edit' form.existing_user.pk %}">{% blocktranslate with name=form.existing_user.get_full_name|default:form.existing_user.username %}Студенттің бетін ашу: {{ name }}{% endblocktranslate %}</a>
+                </p>
+            {% endif %}
+            <button type="submit" class="btn btn-primary">{% if student %}{% translate "Сақтау" %}{% else %}{% translate "Қосу" %}{% endif %}</button>
+        </form>
+    </div>
+    <div class="col-lg-6 mt-3 mt-lg-0">
+        <div class="bg-white rounded shadow-sm p-3 p-md-4 small text-muted">
+            {% if student %}
+                <p class="mb-0">{% translate "Коды өзгермейді. Жаңа код керек болса — тізімдегі «Жаңа код» батырмасы." %}</p>
+            {% else %}
+                <p>{% translate "Логин — ИИН, құпия сөз — жүйе жасайтын код. Код сақтағаннан кейін экранда бір рет көрсетіледі." %}</p>
+                <p class="mb-0">{% translate "Көп студентті бірден қосу үшін — «Excel-ден импорттау»." %}</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
