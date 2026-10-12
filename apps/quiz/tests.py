@@ -63,7 +63,7 @@ from .models import (
     Subtopic,
     Topic,
 )
-from .question_import import CONTEXTS_SHEET, QUESTIONS_SHEET
+from .question_import import CONTEXTS_SHEET, QUESTIONS_SHEET, import_questions
 from .services import (
     AttemptError,
     attempt_deadline,
@@ -4118,6 +4118,46 @@ class QuestionImportImageTests(TeacherTestCase):
 
     def errors(self, response):
         return response.context["result"]["errors"]
+
+    def media_files(self):
+        """TEST_MEDIA_ROOT ішіндегі барлық файлдар (салыстырмалы жолдары)."""
+        return {
+            os.path.relpath(os.path.join(folder, name), TEST_MEDIA_ROOT)
+            for folder, _dirs, names in os.walk(TEST_MEDIA_ROOT)
+            for name in names
+        }
+
+    def test_failed_save_deletes_written_images(self):
+        rows = [
+            question_row(context="K1", text="Бірінші"),
+            question_row(text="Екінші"),
+        ]
+        contexts = [["K1", "Кесте", "kk", "Мәтін", ""]]
+        images = [
+            (QUESTIONS_SHEET, "L2", image_bytes()),
+            (QUESTIONS_SHEET, "G2", image_bytes("JPEG")),
+            (CONTEXTS_SHEET, "F2", image_bytes()),
+        ]
+        file = xlsx_file(rows, contexts, images=images)
+        before = self.media_files()
+
+        # Бірінші сұрақ суреттерімен жазылған соң, екінші сұрақтың жауабында қате
+        real_create = Answer.objects.create
+        calls = []
+
+        def failing_create(**kwargs):
+            calls.append(kwargs)
+            if len(calls) == ANSWERS_PER_QUESTION + 1:
+                raise IntegrityError("сынақ қатесі")
+            return real_create(**kwargs)
+
+        with mock.patch.object(Answer.objects, "create", side_effect=failing_create):
+            with self.assertRaises(IntegrityError):
+                import_questions(informatics(), file)
+
+        self.assertFalse(Question.objects.exists())
+        self.assertFalse(Context.objects.exists())
+        self.assertEqual(self.media_files(), before)
 
     def test_question_answer_and_context_images(self):
         question_png = image_bytes(color="red")

@@ -21,6 +21,7 @@ import zipfile
 from io import BytesIO
 
 from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.db import transaction
 from django.utils.translation import gettext as _
 from openpyxl import Workbook, load_workbook
@@ -506,38 +507,66 @@ def read_questions(subject, rows, images, contexts, add_error, result):
     return questions
 
 
-@transaction.atomic
 def save_import(subject, contexts, questions, result):
-    """Тексерілген контексттер мен сұрақтарды бір транзакцияда сақтайды."""
+    """
+    Тексерілген контексттер мен сұрақтарды бір транзакцияда сақтайды.
+    Сурет файлдары дискіге бірден жазылады, ал транзакция кері қайтарылса
+    (сақтау ортасында қате шықса) олар дерекқорда жоқ болып қалады — сондықтан
+    жазылған файлдар өшіріледі, қате әрі қарай жіберіледі.
+    """
+    saved_files = []
+
+    def remember(instance):
+        if instance.image:
+            saved_files.append(instance.image.name)
+        return instance
+
+    try:
+        with transaction.atomic():
+            save_objects(subject, contexts, questions, result, remember)
+    except Exception:
+        for name in saved_files:
+            default_storage.delete(name)
+        raise
+
+
+def save_objects(subject, contexts, questions, result, remember):
+    """save_import-тің ішкі бөлігі: жазбаларды жасайды, әр жазбаны remember()-ге береді."""
     for data in contexts.values():
         if data["instance"] is None:
-            data["instance"] = Context.objects.create(
-                subject=subject,
-                language=data["language"],
-                title=data["title"],
-                text=data["text"],
-                code=data["code"],
-                image=image_file(data["image"]) if data["image"] else "",
+            data["instance"] = remember(
+                Context.objects.create(
+                    subject=subject,
+                    language=data["language"],
+                    title=data["title"],
+                    text=data["text"],
+                    code=data["code"],
+                    image=image_file(data["image"]) if data["image"] else "",
+                )
             )
             result["contexts"] += 1
 
     for data in questions:
         context = contexts[data["context_key"]]["instance"] if data["context_key"] else None
-        question = Question.objects.create(
-            subtopic=data["subtopic"],
-            context=context,
-            language=data["language"],
-            text=data["text"],
-            code=data["code"],
-            level=data["level"],
-            image=image_file(data["image"]) if data["image"] else "",
+        question = remember(
+            Question.objects.create(
+                subtopic=data["subtopic"],
+                context=context,
+                language=data["language"],
+                text=data["text"],
+                code=data["code"],
+                level=data["level"],
+                image=image_file(data["image"]) if data["image"] else "",
+            )
         )
         for index, (text, image) in enumerate(zip(data["answers"], data["answer_images"])):
-            Answer.objects.create(
-                question=question,
-                text=text,
-                image=image_file(image) if image else "",
-                is_correct=index == data["correct_index"],
+            remember(
+                Answer.objects.create(
+                    question=question,
+                    text=text,
+                    image=image_file(image) if image else "",
+                    is_correct=index == data["correct_index"],
+                )
             )
         result["questions"] += 1
 
