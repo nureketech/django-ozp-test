@@ -67,6 +67,7 @@ from .services import (
     build_variant,
     can_see_answers,
     create_attempt,
+    csv_safe,
     dashboard_sessions,
     finish_attempt,
     finish_expired_attempts,
@@ -569,6 +570,62 @@ class QuestionFormPageTests(TeacherTestCase):
         self.assertEqual(
             [answer.is_correct for answer in answers], [False, False, False, True]
         )
+
+    def use_in_attempt(self, question):
+        """Сұрақты студенттің тест әрекетіне қосады (сұрақ «қолданылған» болады)."""
+        now = timezone.now()
+        attempt = Attempt.objects.create(
+            user=make_student(),
+            session=make_session(),
+            language="kk",
+            deadline=now + timedelta(hours=1),
+        )
+        AttemptQuestion.objects.create(
+            attempt=attempt,
+            question=question,
+            order=1,
+            answer_order=list(question.answers.values_list("pk", flat=True)),
+        )
+
+    def edit_data(self, question, correct, texts=None):
+        """Сұрақты өңдеу формасының POST деректері (correct — дұрыс нұсқаның реті)."""
+        data = self.question_data(
+            **{"answers-INITIAL_FORMS": "4", "answers-correct": str(correct)}
+        )
+        for index, answer in enumerate(question.answers.all()):
+            data[f"answers-{index}-id"] = answer.pk
+            data[f"answers-{index}-text"] = texts[index] if texts else answer.text
+        return data
+
+    def test_used_question_correct_answer_cannot_change(self):
+        question = self.create_question()
+        self.use_in_attempt(question)
+        url = reverse("quiz:teacher_question_edit", args=[question.pk])
+        response = self.client.post(url, self.edit_data(question, correct=3))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "дұрыс жауабын өзгертуге болмайды")
+        self.assertEqual(
+            [answer.is_correct for answer in question.answers.all()],
+            [True, False, False, False],
+        )
+
+    def test_used_question_text_can_be_fixed(self):
+        question = self.create_question()
+        self.use_in_attempt(question)
+        url = reverse("quiz:teacher_question_edit", args=[question.pk])
+        texts = ["Түзетілген", "Жауап 1", "Жауап 2", "Жауап 3"]
+        response = self.client.post(url, self.edit_data(question, correct=0, texts=texts))
+        self.assertRedirects(response, url)
+        answers = list(question.answers.all())
+        self.assertEqual([answer.text for answer in answers], texts)
+        self.assertEqual([answer.is_correct for answer in answers], [True, False, False, False])
+
+    def test_used_question_edit_page_shows_warning(self):
+        question = self.create_question()
+        url = reverse("quiz:teacher_question_edit", args=[question.pk])
+        self.assertNotContains(self.client.get(url), "тестінде қолданылған")
+        self.use_in_attempt(question)
+        self.assertContains(self.client.get(url), "тестінде қолданылған")
 
     def test_edit_form_shows_topic_and_correct_answer(self):
         question = self.create_question(level="C")
@@ -1937,6 +1994,23 @@ class TeacherResultsTests(TestCase):
         # Аяқталмаған тестте балл жоқ
         running = next(line for line in lines if "dana" in line).split(";")
         self.assertEqual(running[8:], ["Жүріп жатыр", "", "", ""])
+
+    def test_csv_export_escapes_formulas(self):
+        # Студент атын өзі енгізеді: Excel оны формула деп орындамауы керек
+        User.objects.filter(pk=self.aigerim.pk).update(
+            first_name='=HYPERLINK("http://evil")', last_name="", username="+aigerim"
+        )
+        _response, content = self.export(group=self.group_a.pk)
+        row = content.lstrip("﻿").splitlines()[1].split(";")
+        self.assertEqual(row[0], "\"'=HYPERLINK(\"\"http://evil\"\")\"")
+        self.assertEqual(row[1], "'+aigerim")
+
+    def test_csv_safe(self):
+        self.assertEqual(csv_safe("Айгерім"), "Айгерім")
+        self.assertEqual(csv_safe(""), "")
+        for value in ["=1+1", "+7", "-2", "@SUM(A1)", chr(9) + "x", chr(13) + "x"]:
+            with self.subTest(value=value):
+                self.assertEqual(csv_safe(value), "'" + value)
 
     def test_csv_export_uses_filter(self):
         _response, content = self.export(group=self.group_b.pk)

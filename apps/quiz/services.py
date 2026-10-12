@@ -870,6 +870,21 @@ def results_summary(attempts):
     return {"count": len(attempts), "finished": len(finished), "average": average}
 
 
+# Excel бұл таңбалардан басталатын ұяшықты формула деп орындайды (CSV инъекциясы)
+CSV_FORMULA_CHARS = ("=", "+", "-", "@", chr(9), chr(13))  # chr(9) — tab, chr(13) — CR
+
+
+def csv_safe(value):
+    """
+    Студент өзі енгізген мәтінді (аты-жөні, логин) CSV-ге қауіпсіз жазу:
+    формула болып орындалмауы үшін алдына апостроф қойылады.
+    """
+    text = str(value)
+    if text.startswith(CSV_FORMULA_CHARS):
+        return "'" + text
+    return text
+
+
 def write_results_csv(attempts, output):
     """
     Нәтижелерді CSV етіп output-қа жазады (HttpResponse немесе файл).
@@ -902,11 +917,11 @@ def write_results_csv(attempts, output):
         is_finished = attempt.status == Attempt.Status.FINISHED
         writer.writerow(
             [
-                row["student"],
-                attempt.user.username,
-                row["group"] or "",
+                csv_safe(row["student"]),
+                csv_safe(attempt.user.username),
+                csv_safe(row["group"] or ""),
                 attempt.session.subject.name,
-                attempt.session.title,
+                csv_safe(attempt.session.title),
                 attempt.get_language_display(),
                 local(attempt.started_at),
                 local(attempt.finished_at),

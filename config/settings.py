@@ -142,6 +142,17 @@ STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+# Серверде (DEBUG=False) collectstatic файл атына хэш қосады (attempt.abc123.js):
+# Nginx статиканы кэштейді, ал JS өзгерсе — аты да өзгеріп, браузер жаңасын жүктейді.
+# Жергілікті әзірлеуде (және тесттерде) — қарапайым сақтау, collectstatic керек емес.
+if not DEBUG:
+    STORAGES = {
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
+        },
+    }
+
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 

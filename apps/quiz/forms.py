@@ -2,6 +2,7 @@ from urllib.parse import urlencode
 
 from django import forms
 from django.db.models import Q
+from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
 
 from apps.accounts.models import StudyGroup
@@ -23,6 +24,10 @@ from .models import (
 
 
 ANSWER_EMPTY_ERROR = _("Әр жауап нұсқасында мәтін немесе сурет болуы керек.")
+USED_QUESTION_ERROR = _(
+    "Бұл сұрақ студенттердің тестінде қолданылған, дұрыс жауабын өзгертуге болмайды. "
+    "Көшірмесін жасап, соны өңдеңіз."
+)
 
 # Сурет өрістері: браузер тек рұқсат етілген пішімдерді ұсынады (тексеруді сервер жасайды)
 IMAGE_ACCEPT = "image/jpeg,image/png,image/webp"
@@ -289,14 +294,23 @@ class QuestionAnswersFormSet(forms.BaseInlineFormSet):
     def correct_name(self):
         return f"{self.prefix}-correct"
 
-    def correct_value(self):
-        """Қай нұсқа дұрыс деп белгіленген ("0"–"3", белгісіз болса "") — шаблон үшін."""
-        if self.is_bound:
-            return self.data.get(self.correct_name, "")
+    @cached_property
+    def used_in_attempts(self):
+        """Сұрақ студенттердің тестінде қолданылды ма (онда дұрыс жауабы өзгермейді)."""
+        return self.instance.pk is not None and self.instance.attempt_items.exists()
+
+    def saved_correct_value(self):
+        """Дерекқорда қай нұсқа дұрыс ("0"–"3", жаңа сұрақта "")."""
         for index, form in enumerate(self.forms):
             if form.instance.pk and form.instance.is_correct:
                 return str(index)
         return ""
+
+    def correct_value(self):
+        """Қай нұсқа дұрыс деп белгіленген ("0"–"3", белгісіз болса "") — шаблон үшін."""
+        if self.is_bound:
+            return self.data.get(self.correct_name, "")
+        return self.saved_correct_value()
 
     def clean(self):
         super().clean()
@@ -304,6 +318,10 @@ class QuestionAnswersFormSet(forms.BaseInlineFormSet):
         value = self.data.get(self.correct_name)
         if value not in allowed_values:
             raise forms.ValidationError(_("Дұрыс жауапты белгілеңіз."))
+        # Тестте қолданылған сұрақтың дұрыс жауабы ауысса, ескі нәтижелердің
+        # балы бұзылады (сақталған балл мен нәтиже беті сәйкес келмей қалады)
+        if self.used_in_attempts and value != self.saved_correct_value():
+            raise forms.ValidationError(USED_QUESTION_ERROR)
         self.correct_index = int(value)
 
     def save(self, commit=True):

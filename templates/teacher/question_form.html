@@ -51,6 +51,9 @@
                     <span class="fw-normal text-muted small">— {% translate "дұрысын радио-батырмамен белгілеңіз; әр нұсқада мәтін немесе сурет болуы керек" %}</span>
                 </div>
                 {{ formset.management_form }}
+                {% if formset.used_in_attempts %}
+                    <div class="alert alert-warning small py-2">{% translate "Бұл сұрақ студенттердің тестінде қолданылған: дұрыс жауабын өзгертуге болмайды (мәтіндегі қатені түзетуге болады). Басқа дұрыс жауап керек болса — көшірмесін жасаңыз." %}</div>
+                {% endif %}
                 {% for error in formset.non_form_errors %}<div class="alert alert-danger py-2">{{ error }}</div>{% endfor %}
                 {% with correct_value=formset.correct_value %}
                     {% for answer_form in formset %}
